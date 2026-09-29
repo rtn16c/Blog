@@ -1,4 +1,4 @@
-# Return 16 — A Pink Tech Blog
+# Return 16
 
 A personal tech blog about mainframes, z/OS, computing history, and life in STEM. Tutorials, tips, and tales from the sysprog trenches.
 
