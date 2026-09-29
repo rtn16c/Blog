@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Cooked a SYSRES! — Return 16</title>
+  <meta name="description" content="A cautionary tale about SMP/E maintenance, linklist manipulation, and what happens when SYS1.NUCLEUS gets extents it doesn't want.">
+  <link rel="canonical" href="https://return16.blog/2026/04/23/i-cooked-a-sysres/">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> · Breaking Things
+          </div>
+          <h1 class="post-header__title">I Cooked a SYSRES!</h1>
+          <div class="post-header__meta">
+            <time datetime="2026-04-23">23 April 2026</time>
+            <div class="post-header__tags">
+              <span class="tag">zos</span>
+              <span class="tag">smp/e</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p>But before we all start panicking, let me preface this by saying it was on my employer's z/D&amp;T (Development and Test) environment — not a client system. No mainframes were hurt (much) in the making of this blog post.</p>
+
+          <p>So what happened?</p>
+
+          <p><strong>TLDR:</strong></p>
+
+          <p>It turns out the <code>SYS1.NUCLEUS</code> dataset can't have extents allocated. It must be exact in size because it needs to be loaded into contiguous memory at IPL time. This is probably common knowledge for experienced mainframers, but for baby mainframers like me this is completely new information — hence the post about it, I must share this exciting news.</p>
+
+          <p>So our system issued the following message upon re-IPL:</p>
+
+          <blockquote><p>AWSEMI307I Warning! Disabled Wait CPU 0 = 00020000 00000000 00000000 00000081</p></blockquote>
+
+          <p>And if we go to the IBM z/OS 3.1 Documents and look at the disabled wait codes it tells us exactly that — <em>"Initial program load (IPL) tried to load a module from the SYS1.NUCLEUS data set. The SYS1.NUCLEUS data set or an IEANUC0x or IEAVEDAT member occupies more than one extent."</em> [1]</p>
+
+          <p>I will tell myself that IBM wouldn't have this documented if people didn't do it on the regular, to make myself feel better.</p>
+
+          <h2>And Now for the Long Version</h2>
+
+          <p>Let's lay down some facts first.</p>
+
+          <ul>
+            <li>Our test system runs z/OS from the target libraries of the SMP/E zone it is installed in.</li>
+            <li>Is this a bad thing? Yeah, a little bit.</li>
+            <li>Did I make an inactive copy of the target libraries and apply maintenance to those instead? No way, this is a test system and it is prime cowboy hours over here (yeehaw).</li>
+          </ul>
+
+          <p>And thus, my debacle began.</p>
+
+          <p>I applied maintenance with a standard SMP/E apply job. The job came back and reported that <code>SYS1.MIGLIB</code> ran out of space during the apply. No worries. We'll increase the size.</p>
+
+          <p>Usually I do this by making a copy of the dataset into a <code>*.NEW</code> with a larger allocation — maybe I even throw a little secondary space on there so I don't have to come back later (hint: first mistake). Just because some system datasets can have secondary space, doesn't mean it's wise or best practice to do that.</p>
+
+          <p>I now have my slightly larger <code>SYS1.MIGLIB.NEW</code> allocated. Hooray for me.</p>
+
+          <p>Now comes the second big no-no of the day. I want to swap my <code>SYS1.MIGLIB.NEW</code> with <code>SYS1.MIGLIB</code>. For datasets with no ENQs against them, I can just rename the original <code>SYS1.MIGLIB</code> to <code>SYS1.MIGLIB.OLD</code> and rename <code>SYS1.MIGLIB.NEW</code> to <code>SYS1.MIGLIB</code>. And the system is (hopefully) none the wiser.</p>
+
+          <p>Except <code>SYS1.MIGLIB</code> has ENQs on our system — specifically from XCFAS and LLA. That's the cross-system coupling facility and the library look-aside.</p>
+
+          <p>I can stop LLA temporarily with a <code>/P LLA</code> console command and start it with an <code>/S LLA</code> — I've done it before and the world hasn't ended, so that's our LLA ENQ taken care of. Next, our LPAR being worked on is a monoplex. So the XCFAS is probably not vital to its existence. But I can't just stop it. XCFAS is part of JES and stopping JES is… dramatic.</p>
+
+          <p>So I went looking for another way and found a very promising article about the dynamic linklist facility. Specifically, I found this set of commands:</p>
+
+          <blockquote><p>SETPROG LNKLST,UNALLOCATE
+SETPROG LNKLST,ALLOCATE</p></blockquote>
+
+          <p>Did I read the rest of the article? Of course not, who has time for that (mistake the third). I took my linklist unallocate command and went on my merry way.</p>
+
+          <p>I stop LLA, I unallocate the entire linklist, I swap the dataset names, then I reallocate the linklist and start LLA back up. And everything seems great — so I rerun my apply job to get the rest of that maintenance on now there's enough space.</p>
+
+          <p>The maintenance fails two more times for out of space in <code>SYS1.LINKLIB</code> and <code>SYS1.NUCLEUS</code>. But that's OK because I know the workaround I used for <code>SYS1.MIGLIB</code>! Let's do that two more times and give these datasets loads of secondary space (I'm going to stop counting the mistakes — suffice to say, please don't do this).</p>
+
+          <p>This was around the time I started getting abends all over the place — certain commands weren't working, it was chaos! Because LLA couldn't look up the commands I was running in storage — the secondary storage had moved everything around when the dataset expanded to accommodate the new members installed by the SMP/E apply job.</p>
+
+          <p>So according to some very fast panic-googling I did, this problem can be solved with an <code>/F LLA,REFRESH</code> (a modify refresh of LLA to force it to update the locations of all the members). However that turned out to be a lie and jobs and commands were still abending. A second source I found recommended rebuilding the linklist. No problem, I've had a little practice at that… but that didn't fix things either.</p>
+
+          <p>It is at this point that I decided to consult one of my more senior co-workers (you know who you are) who very kindly puts up with my 24/7 dumb questions and breakage of things. I would like to know if there is any way out of this besides an IPL? There is not.</p>
+
+          <p>Which circles nicely back to the beginning of this post. Wait State 081.</p>
+
+          <h2>So How Do We Fix This?</h2>
+
+          <p>I have no way of mounting this SYSRES elsewhere to any of the other LPARs, because they've all been set up as copies of this first one and all the SYSRES volumes have the exact same VOLSER name.</p>
+
+          <p><strong>BUT.</strong> That also means I can just pinch one of the other LPARs' SYSRES volumes quickly and IPL off that. Huzzah, the LPAR is saved (ish).</p>
+
+          <p>And now begins the process of making an inactive target copy of the z/OS SMP/E zone — so that we can apply maintenance to that without cooking a second SYSRES. Once we're ready to build a new one, we can initialize the volume with the dodgy SYS1.NUCLEUS, redeploy a copy of the new target datasets to that, and hopefully nothing else goes sideways.</p>
+
+          <p>To be continued…?</p>
+
+          <h2>References</h2>
+
+          <p>[1] IBM, Wait State Codes: <a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=wsc-081" target="_blank" rel="noopener">https://www.ibm.com/docs/en/zos/3.1.0?topic=wsc-081</a><br>
+          [2] IBM, Using Dynamic Lnklst Facility: <a href="https://www.ibm.com/support/pages/using-dynamic-lnklst-facility-safely-and-properly" target="_blank" rel="noopener">Using Dynamic Lnklst Facility Safely and Properly</a></p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

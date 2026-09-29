@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizing viewable columns in SDSF panels — Return 16</title>
+  <meta name="description" content="How to customize which fields are displayed in SDSF panels by editing the ISFPRMxx member — find your group, define custom FLDENT entries, and refresh dynamically.">
+  <link rel="canonical" href="https://return16.blog/2026/07/07/customizing-viewable-columns-in-sdsf-panels/">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> ·
+            <a href="../mainframe/index.html">SDSF</a>
+          </div>
+          <h1 class="post-header__title">Customizing viewable columns in SDSF panels</h1>
+          <div class="post-header__meta">
+            <time datetime="2026-07-07">07 July 2026</time>
+            <div class="post-header__tags">
+              <span class="tag">sdsf</span>
+              <span class="tag">held-output</span>
+              <span class="tag">jes2</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p>Did you know you can edit which fields are displayed in SDSF, their width, and the order they're displayed in by default?</p>
+
+          <p>To make these changes, you first need two pieces of information: the display group you're part of and the member name that SDSF is reading its parameters from.</p>
+
+          <h2>To Find Your Group</h2>
+
+          <p>In any SDSF panel, enter <code>WHO</code> in the command input.</p>
+
+          <p>This displays information about your session, such as your user ID, your login PROC, your <code>GRPINDEX</code>, and your <code>GRPNAME</code> (these last two are important, so make a note of them).</p>
+
+          <h2>To Find the SDSF Parameter Member in Use</h2>
+
+          <p>Issue the MVS command <code>/F SDSF,DISPLAY</code> from SDSF, or the same command without the leading slash if you have an MVS console.</p>
+
+          <p>There should be a line beginning with <code>PARMS:</code> that shows the member name and dataset location.</p>
+
+          <p>The default member is <code>SYS1.PARMLIB(ISFPRM00)</code>.</p>
+
+          <h2>Customizing the ISFPRMxx Member</h2>
+
+          <p>Go to the location of your ISFPRMxx member and open it for editing (preferably after you've saved a backup of it in case you mess up).</p>
+
+          <p>If you're working at a client site, there are probably already groups defined in this member. That's why we first checked which group we were part of. Find your group in the <code>ISFPRMxx</code> member. It will start with a line similar to:</p>
+
+          <blockquote><p>GROUP ILPROC(BATCH)</p></blockquote>
+
+          <p>where <code>BATCH</code> is your group name in this example.</p>
+
+          <p>Everything indented beneath this line defines your group's attributes. If you have any customized fields, they'll be listed here using <code>nnFIELDS</code> statements, where <code>nn</code> is the short character name for the SDSF panel being customized.</p>
+
+          <p>For example, <code>CKFIELDS</code> customizes the Health Checker panel fields, while <code>HFIELDS</code> customizes the Held Output panel fields. It will appear like this:</p>
+
+          <blockquote><p>HFIELDS(HFIELD1)</p></blockquote>
+
+          <p>where <code>HFIELD1</code> is our example customized display name.</p>
+
+          <p>The name of the customized display listed here points to a section of <code>FLDENT</code> statements beneath a <code>FLD NAME(n) TYPE(m)</code> statement — where <code>n</code> is the name you found in the group definition and <code>m</code> is the type of panel being customized.</p>
+
+          <p>Below that will be a <code>FLDENT</code> line for every column you want displayed in the SDSF panel table. <code>FLDENT</code> statements follow this syntax:</p>
+
+          <blockquote><p>FLDENT COLUMN(c),TITLE(t),WIDTH(n)</p></blockquote>
+
+          <p><strong>Note:</strong> If you want to use a title containing non-standard characters, such as hyphens or spaces, enclose the title in single quotation marks like this:</p>
+
+          <blockquote><p>...,TITLE('Sample Title')</p></blockquote>
+
+          <p>IBM has a <a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=customization-columns-sdsf-panels" target="_blank" rel="noopener">handy reference table</a> that lists all available columns and their default attributes.</p>
+
+          <h2>Reading in the New ISFPRMxx After Customizations</h2>
+
+          <p>Once you've updated the fields you want to display, you can read in the new ISFPRMxx member dynamically with the following command:</p>
+
+          <blockquote><p>/F SDSF,REFRESH,MEMBER(xx)</p></blockquote>
+
+          <p>The <code>xx</code> refers to the last two digits on your ISFPRMxx member.</p>
+
+          <h2>Why Would We Need This?</h2>
+
+          <p>The main benefit of this feature is that you can control which users are assigned to which groups using SAF.</p>
+
+          <p>So you can create custom field layouts that allow users to view only the information they're permitted to see on an SDSF panel. Or just make a cleaner, less cluttered panel that only has information relevant to your job role.</p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

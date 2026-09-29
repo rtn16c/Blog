@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ============================================================
+    INSTRUCTIONS FOR NEW POSTS
+    ============================================================
+    1. Copy this file into the /posts/ directory.
+    2. Name it with a descriptive slug, e.g. "my-post-title.html"
+    3. Fill in the fields marked with <!-- EDIT --> comments below.
+    4. Add the post to:
+         - index.html (latest posts section)
+         - mainframe/index.html OR computing/index.html
+    ============================================================ -->
+
+  <!-- EDIT: Update the page title -->
+  <title>Post Title Here — Return 16</title>
+
+  <!-- EDIT: Write a 1–2 sentence meta description for SEO -->
+  <meta name="description" content="A short description of what this post covers. Aim for 140–160 characters.">
+
+  <!-- EDIT: Add the canonical URL if this was originally published elsewhere -->
+  <!-- <link rel="canonical" href="https://return16.blog/YYYY/MM/DD/post-slug/"> -->
+
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================================================
+    HEADER — do not edit unless adding a new nav item
+    ============================================================ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <!-- EDIT: Add class="active" to the nav link that matches this post's category -->
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+
+        <!-- ============================================================
+          POST HEADER
+          ============================================================ -->
+        <header class="post-header">
+
+          <!-- EDIT: Set the category breadcrumb.
+               Use one of: Mainframe, Computing & Tech
+               You can add a subcategory after the · separator -->
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> · Subcategory
+          </div>
+
+          <!-- EDIT: Post title -->
+          <h1 class="post-header__title">Your Post Title Goes Here</h1>
+
+          <div class="post-header__meta">
+            <!-- EDIT: Set the publication date (datetime attribute uses YYYY-MM-DD format) -->
+            <time datetime="YYYY-MM-DD">DD Month YYYY</time>
+
+            <!-- EDIT: Add relevant tags. Use lowercase, hyphenated slugs. -->
+            <div class="post-header__tags">
+              <span class="tag">tag-one</span>
+              <span class="tag">tag-two</span>
+              <span class="tag">tag-three</span>
+            </div>
+          </div>
+
+        </header>
+
+        <!-- ============================================================
+          POST BODY — write your content here
+          ============================================================
+          Available elements:
+
+          PARAGRAPH:
+            <p>Your paragraph text here.</p>
+
+          HEADING (h2 = major section, h3 = subsection, h4/h5 = minor):
+            <h2>Section Title</h2>
+            <h3>Subsection Title</h3>
+
+          INLINE CODE (short commands, filenames, keywords):
+            <code>ADDUSER</code>
+
+          CODE BLOCK (multi-line code, JCL, REXX, commands):
+            <pre><code>//SAMPJOB JOB ,'test'
+//STEP1   EXEC PGM=IEFBR14
+//        DD DUMMY</code></pre>
+
+          COMMAND / TERMINAL LINE (single command):
+            <blockquote><p>ADDUSER TSOUSR1</p></blockquote>
+
+          UNORDERED LIST:
+            <ul>
+              <li>Item one</li>
+              <li>Item two</li>
+            </ul>
+
+          ORDERED LIST:
+            <ol>
+              <li>Step one</li>
+              <li>Step two</li>
+            </ol>
+
+          LINK:
+            <a href="https://example.com" target="_blank" rel="noopener">Link text ↗</a>
+
+          INTERNAL LINK (to another post):
+            <a href="other-post-slug.html">Other post title</a>
+
+          BOLD / ITALIC:
+            <strong>bold text</strong>
+            <em>italic text</em>
+
+          HORIZONTAL RULE (section break):
+            <hr>
+
+          INFO/NOTE BOX:
+            <div class="info-box">
+              <strong>Note:</strong> Something important to call out here.
+            </div>
+          ============================================================ -->
+
+        <div class="post-body">
+
+          <!-- EDIT: Replace this with your actual post content -->
+
+          <p>Start writing your post here. This first paragraph will appear in the post card excerpt on the homepage and category pages, so make it a good summary of what the post is about.</p>
+
+          <h2>First Section</h2>
+
+          <p>Your content here.</p>
+
+          <h2>Second Section</h2>
+
+          <p>More content here.</p>
+
+          <!-- Example code block -->
+          <pre><code>// Example JCL or code goes here</code></pre>
+
+          <!-- Example note box -->
+          <div class="info-box">
+            <strong>Note:</strong> Any important caveats or warnings go here.
+          </div>
+
+        </div>
+      </article>
+
+      <!-- ============================================================
+        POST FOOTER — update the back links if needed
+        ============================================================ -->
+      <div class="post-footer">
+        <!-- EDIT: Update href to match the post's primary category -->
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER — do not edit -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

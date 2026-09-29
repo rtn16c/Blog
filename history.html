@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post History — Return 16</title>
+  <meta name="description" content="Every post on Return 16, in reverse chronological order.">
+  <link rel="icon" href="images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="mainframe/index.html">Mainframe</a>
+        <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="resources.html">Resources</a>
+        <a href="history.html" class="active">Post History</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <header class="page-header">
+        <h1 class="page-header__title">
+          <img src="images/sparkle-heart.png" alt="" width="36" height="36" style="vertical-align:middle;">
+          Post History
+        </h1>
+      </header>
+
+      <ol class="post-history" reversed>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2026-07-07">07 Jul 2026</time>
+          <a href="posts/customizing-viewable-columns-in-sdsf-panels.html">Customizing viewable columns in SDSF panels</a>
+          <span class="post-history__cat">Mainframe · SDSF</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2026-04-23">23 Apr 2026</time>
+          <a href="posts/i-cooked-a-sysres.html">I Cooked a SYSRES!</a>
+          <span class="post-history__cat">Mainframe · Breaking Things</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2026-03-20">20 Mar 2026</time>
+          <a href="posts/adding-users-to-racf.html">Adding Users to RACF</a>
+          <span class="post-history__cat">Mainframe · RACF</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2025-09-19">19 Sep 2025</time>
+          <a href="posts/jobcard-template-insert-macro.html">Jobcard Template Insert Macro</a>
+          <span class="post-history__cat">Mainframe · ISPF</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2025-09-15">15 Sep 2025</time>
+          <a href="posts/whats-in-a-job-card.html">What's in a Job Card?</a>
+          <span class="post-history__cat">Mainframe · JCL</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2025-05-28">28 May 2025</time>
+          <a href="posts/ibm-sample-edit-macros.html">IBM Sample Edit Macros</a>
+          <span class="post-history__cat">Mainframe · ISPF</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2025-03-27">27 Mar 2025</time>
+          <a href="posts/tso-logon-procedures-and-racf.html">TSO Logon Procedures and RACF</a>
+          <span class="post-history__cat">Mainframe · RACF</span>
+        </li>
+
+        <li class="post-history__item">
+          <time class="post-history__date" datetime="2025-02-22">22 Feb 2025</time>
+          <a href="posts/purging-the-jes-spool-in-sdsf.html">Purging the JES Spool in SDSF</a>
+          <span class="post-history__cat">Mainframe · JES2</span>
+        </li>
+
+      </ol>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="mainframe/index.html">Mainframe</a>
+        <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="resources.html">Resources</a>
+        <a href="history.html">Post History</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

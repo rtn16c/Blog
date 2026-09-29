@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Return 16 — A Pink Tech Blog</title>
+  <meta name="description" content="Return 16 is a personal tech blog about mainframes, z/OS, computing history, and life in STEM. Tutorials, tips, and tales from the sysprog trenches.">
+  <meta property="og:title" content="Return 16">
+  <meta property="og:description" content="A personal blog about mainframes, z/OS, computing, and STEM.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">
+          Return 16
+          <span>a personal tech blog</span>
+        </div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="index.html" class="active">Home</a>
+        <a href="mainframe/index.html">Mainframe</a>
+        <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="resources.html">Resources</a>
+        <a href="history.html">Post History</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main id="main">
+    <div class="page-wrapper">
+
+      <!-- Hero -->
+      <section class="hero" aria-label="Welcome">
+        <img src="images/sparkle-heart.png" alt="" class="hero__sparkle" width="56" height="56">
+        <h1 class="hero__title">Return 16</h1>
+        <p class="hero__subtitle">// mainframes · computing · life in tech</p>
+      </section>
+
+      <!-- Category Cards -->
+      <section aria-label="Browse by category">
+        <div class="category-section">
+          <a href="mainframe/index.html" class="category-card" aria-label="Browse Mainframe posts">
+            <div class="category-card__icon">🖥️</div>
+            <div class="category-card__name">Mainframe</div>
+            <p class="category-card__desc">IBM Z, z/OS, RACF, ISPF, JCL, SDSF, SMP/E, and everything sysprog. Tutorials, tips, tricks and troubleshooting.</p>
+            <span class="category-card__count">8 posts</span>
+          </a>
+          <a href="computing/index.html" class="category-card" aria-label="Browse Computing &amp; Technology posts">
+            <div class="category-card__icon">💻</div>
+            <div class="category-card__name">Computing &amp; Technology</div>
+            <p class="category-card__desc">General computing, tech history, programming, women in STEM, and everything else in the wide world of technology.</p>
+            <span class="category-card__count">coming soon</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Latest Posts -->
+      <section aria-label="Latest posts">
+        <h2 class="section-title">✨ Latest Posts</h2>
+        <div class="post-grid">
+
+          <article class="post-card">
+            <div class="post-card__content">
+              <div class="post-card__category">Mainframe · SDSF</div>
+              <h3 class="post-card__title"><a href="posts/customizing-viewable-columns-in-sdsf-panels.html">Customizing viewable columns in SDSF panels</a></h3>
+              <p class="post-card__excerpt">Did you know you can edit which fields are displayed in SDSF, their width, and the order they're displayed in by default? Learn how to find your group, locate the ISFPRMxx member, and define custom field layouts.</p>
+              <div class="post-card__meta">
+                <time class="post-date" datetime="2026-07-07">07 Jul 2026</time>
+                <span class="tag">sdsf</span><span class="tag">held-output</span><span class="tag">jes2</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="post-card">
+            <div class="post-card__content">
+              <div class="post-card__category">Mainframe · Breaking Things</div>
+              <h3 class="post-card__title"><a href="posts/i-cooked-a-sysres.html">I Cooked a SYSRES!</a></h3>
+              <p class="post-card__excerpt">It turns out SYS1.NUCLEUS can't have extents — something this baby mainframer learned the hard way. No production mainframes were hurt (much) in the making of this blog post.</p>
+              <div class="post-card__meta">
+                <time class="post-date" datetime="2026-04-23">23 Apr 2026</time>
+                <span class="tag">zos</span><span class="tag">smp/e</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="post-card">
+            <div class="post-card__content">
+              <div class="post-card__category">Mainframe · RACF</div>
+              <h3 class="post-card__title"><a href="posts/adding-users-to-racf.html">Adding Users to RACF</a></h3>
+              <p class="post-card__excerpt">A complete guide to creating RACF user IDs — from the minimum ADDUSER command through to TSO and OMVS segments, catalog aliases, dataset protection, and ZFS creation.</p>
+              <div class="post-card__meta">
+                <time class="post-date" datetime="2026-03-20">20 Mar 2026</time>
+                <span class="tag">racf</span><span class="tag">tso</span><span class="tag">userids</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="post-card">
+            <div class="post-card__content">
+              <div class="post-card__category">Mainframe · ISPF</div>
+              <h3 class="post-card__title"><a href="posts/jobcard-template-insert-macro.html">Jobcard Template Insert Macro</a></h3>
+              <p class="post-card__excerpt">A handy REXX ISPF edit macro that inserts a formatted job card template at your cursor position. Includes usage instructions and the full macro source.</p>
+              <div class="post-card__meta">
+                <time class="post-date" datetime="2025-09-19">19 Sep 2025</time>
+                <span class="tag">ispf</span><span class="tag">edit-macros</span><span class="tag">rexx</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="post-card">
+            <div class="post-card__content">
+              <div class="post-card__category">Mainframe · JCL</div>
+              <h3 class="post-card__title"><a href="posts/whats-in-a-job-card.html">What's in a Job Card?</a></h3>
+              <p class="post-card__excerpt">JCL is a staple for Systems Programmers, and the job card is the most important part. A guide to positional and keyword parameters — CLASS, MSGCLASS, MSGLEVEL, NOTIFY, REGION, and TIME.</p>
+              <div class="post-card__meta">
+                <time class="post-date" datetime="2025-09-15">15 Sep 2025</time>
+                <span class="tag">jcl</span><span class="tag">jes2</span><span class="tag">job-card</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+        <div class="view-all-wrap">
+          <a href="history.html" class="view-all-link">View all posts →</a>
+        </div>
+      </section>
+
+      <div class="sparkle-divider" aria-hidden="true">✦ ✦ ✦</div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="mainframe/index.html">Mainframe</a>
+        <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="resources.html">Resources</a>
+        <a href="history.html">Post History</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    (function () {
+      const STORAGE_KEY = 'r16_confetti_seen';
+      if (sessionStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY)) return;
+      localStorage.setItem(STORAGE_KEY, '1');
+
+      const COLOURS = ['#f472b6','#db2777','#9d174d','#c4b5fd','#7c3aed','#fda4af','#fbcfe8','#fff'];
+      const SHAPES  = ['square', 'circle', 'ribbon'];
+      const COUNT   = 120;
+      const canvas  = document.createElement('canvas');
+
+      Object.assign(canvas.style, {
+        position: 'fixed', inset: '0', width: '100%', height: '100%',
+        pointerEvents: 'none', zIndex: '9998'
+      });
+      document.body.appendChild(canvas);
+
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const pieces = Array.from({ length: COUNT }, () => ({
+        x:     Math.random() * canvas.width,
+        y:     Math.random() * -canvas.height,
+        w:     6 + Math.random() * 8,
+        h:     4 + Math.random() * 6,
+        colour: COLOURS[Math.floor(Math.random() * COLOURS.length)],
+        shape:  SHAPES[Math.floor(Math.random() * SHAPES.length)],
+        vx:    (Math.random() - 0.5) * 2.5,
+        vy:    2 + Math.random() * 3.5,
+        angle: Math.random() * Math.PI * 2,
+        spin:  (Math.random() - 0.5) * 0.18,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.04 + Math.random() * 0.04,
+        opacity: 1
+      }));
+
+      let raf;
+      const FADE_START = canvas.height * 0.75;
+
+      function draw() {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        let allGone = true;
+        pieces.forEach(p => {
+          p.y      += p.vy;
+          p.x      += p.vx + Math.sin(p.wobble) * 0.8;
+          p.angle  += p.spin;
+          p.wobble += p.wobbleSpeed;
+          if (p.y > FADE_START) {
+            p.opacity = Math.max(0, 1 - (p.y - FADE_START) / (canvas.height * 0.25));
+          }
+          if (p.opacity > 0) allGone = false;
+
+          ctx.save();
+          ctx.globalAlpha = p.opacity;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.angle);
+          ctx.fillStyle = p.colour;
+
+          if (p.shape === 'circle') {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (p.shape === 'ribbon') {
+            ctx.fillRect(-p.w / 2, -p.h / 4, p.w, p.h / 2);
+          } else {
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          }
+          ctx.restore();
+        });
+
+        if (allGone) {
+          cancelAnimationFrame(raf);
+          canvas.remove();
+        } else {
+          raf = requestAnimationFrame(draw);
+        }
+      }
+
+      // Small delay so the page renders before the burst
+      setTimeout(() => { raf = requestAnimationFrame(draw); }, 300);
+
+      // Respect reduced-motion preference
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        canvas.remove();
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adding Users to RACF — Return 16</title>
+  <meta name="description" content="A complete guide to creating RACF user IDs — ADDUSER command, TSO segments, OMVS segments, protected UIDs, catalog aliases, dataset protection, and ZFS creation.">
+  <link rel="canonical" href="https://return16.blog/2026/03/20/adding-users-to-racf/">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> ·
+            <a href="../mainframe/index.html">RACF</a>
+          </div>
+          <h1 class="post-header__title">Adding Users to RACF</h1>
+          <div class="post-header__meta">
+            <time datetime="2026-03-20">20 March 2026</time>
+            <div class="post-header__tags">
+              <span class="tag">racf</span>
+              <span class="tag">tso</span>
+              <span class="tag">racf-ids</span>
+              <span class="tag">userids</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p>RACF users can be made with the <code>ADDUSER</code> command. Because creating a user is a multiple step process with a lot of different RACF commands involved, creating a user via batch is common. RACF commands can be run in batch with the <code>IKJEFT01</code> program, which allows you to execute TSO commands in batch.</p>
+
+          <p>The minimum command you can enter is:</p>
+
+          <blockquote><p>ADDUSER &lt;userid&gt;</p></blockquote>
+
+          <p>You can also list a user once created to view information about them:</p>
+
+          <blockquote><p>LU &lt;userid&gt;</p></blockquote>
+
+          <p>Or delete a user:</p>
+
+          <blockquote><p>DELUSER &lt;userid&gt;</p></blockquote>
+
+          <p>Adding a user with the above command doesn't automatically mean they can log onto a mainframe. To perform certain tasks they need segments and permissions added to their profile, for example:</p>
+
+          <ul>
+            <li>TSO login → needs a TSO segment</li>
+            <li>USS/OMVS usage → needs an OMVS segment</li>
+          </ul>
+
+          <h2>Protected User IDs</h2>
+
+          <p>A user created without these segments (without the ability to login) is called a 'protected uid' [1] or sometimes a 'functional uid'. Protected IDs are often used to own and run started tasks, own certificates, and similar non-interactive purposes.</p>
+
+          <p>It is good practice to break up tasks and applications into separate protected UIDs and not have them associated with a real user, as that user may become revoked and all the services associated with them will cease to function. Protected UIDs are non-revocable by time expiry — they can only be revoked by explicit command.</p>
+
+          <h2>Creating an Interactive User</h2>
+
+          <p>To create a user that can be logged onto you need to add a TSO segment — it is also best practice to give the account details like the user's full name, a default security group, and an owner. If these are not specified, defaults from the system ICHRIN03 module or RACF defaults are used.</p>
+
+          <blockquote><p>ADDUSER &lt;userid&gt; DFLTGRP(&lt;groupid&gt;) OWNER(&lt;ownerid&gt;) NAME('&lt;firstname lastname&gt;') PASSWORD(&lt;temp password&gt;)</p></blockquote>
+
+          <h2>Adding a TSO Segment</h2>
+
+          <p>By creating the TSO segment with additional parameters, we can have fields in the TSO login screen auto-populate for the user.</p>
+
+          <p><strong>ACCTNUM</strong> — must be already defined to RACF in the <code>ACCTNUM</code> resource class and the UID must have read access to it. This can be added with the command:</p>
+
+          <blockquote><p>PE &lt;account number&gt; CL(ACCTNUM) ID(&lt;userid&gt;)</p></blockquote>
+
+          <p><strong>PROC</strong> — for the default logon procedure. More on logon procedures can be found in the <a href="tso-logon-procedures-and-racf.html">TSO Logon Procedures and RACF</a> post.</p>
+
+          <p><strong>MAXSIZE</strong> — the maximum session size the user is allowed to allocate to themselves on logon in KB. The largest possible session size is 2,096,128 KB (approximately 2 GB).</p>
+
+          <blockquote><p>TSO(ACCTNUM(&lt;account number&gt;) PROC(&lt;default logon proc&gt;) MAXSIZE(&lt;maximum session size&gt;))</p></blockquote>
+
+          <h2>Adding an OMVS Segment</h2>
+
+          <p>The same can be done to add the OMVS segment. Like traditional UNIX, a UID of 0 can be set to grant superuser — or any other number for a regular user.</p>
+
+          <blockquote><p>OMVS(HOME(/u/&lt;lowercase userid&gt;) UID(1000) SHARED PROGRAM(/bin/sh))</p></blockquote>
+
+          <h2>A Full Example Job to Make a User ID</h2>
+
+          <pre><code>//ADDUSER JOB ,'add user',
+//  MSGCLASS=X,CLASS=A,NOTIFY=&SYSUID
+//ADD     EXEC PGM=IKJEFT01
+//SYSTSPRT DD   SYSOUT=*
+//SYSTSIN  DD   *,SYMBOLS=(EXECSYS,SYMPRINT)
+ ADDUSER &lt;userid&gt;                          -
+         DFLTGRP(&lt;groupid&gt;)               -
+         OWNER(&lt;ownerid&gt;)                 -
+         NAME('&lt;firstname lastname&gt;')     -
+         PASSWORD(&lt;temp password&gt;)
+ ALTUSER &lt;userid&gt;                          -
+         TSO(ACCTNUM(&lt;account number&gt;)    -
+             PROC(&lt;default logon proc&gt;)   -
+             MAXSIZE(2096128))             -
+         OMVS(HOME(/u/&lt;lowercase userid&gt;) -
+              UID(1000)                    -
+              SHARED                      -
+              PROGRAM(/bin/sh))
+/*</code></pre>
+
+          <p>This will make the user ID. We should also do a couple of other things so they can create mainframe datasets under their userid, have secure datasets, and use their OMVS segment.</p>
+
+          <h2>Defining a Catalog Alias</h2>
+
+          <p>Add their userid as a related alias to your system's user catalog if it has one (it is best practice). The user's datasets will then be catalogued on the user catalog.</p>
+
+          <pre><code>//DEFALIAS EXEC  PGM=IDCAMS
+//SYSPRINT   DD  SYSOUT=*
+//SYSIN DD *,SYMBOLS=(EXECSYS,SYMPRINT)
+   DEFINE ALIAS                       -
+          (NAME(&amp;SYSUID)               -
+           RELATE('CATALOG.UCATALOG')) -
+/*</code></pre>
+
+          <h2>Protecting Datasets with RACF</h2>
+
+          <p>Protect their userid-qualified datasets with RACF. Allow other users none or minimal, controlled access to the user's datasets.</p>
+
+          <pre><code>//DEFRACF EXEC PGM=IKJEFT01
+//SYSTSPRT DD   SYSOUT=*
+//SYSTSIN  DD   *,SYMBOLS=(EXECSYS,SYMPRINT)
+ ADDSD '&lt;userid&gt;.*' GENERIC UACC(NONE) OWNER(&lt;ownerid&gt;)
+ PERMIT '&lt;userid&gt;.*' GENERIC ID(&lt;userid&gt;) ACCESS(CONTROL)
+ SETROPTS GENERIC(DATASET) REFRESH
+/*</code></pre>
+
+          <h2>Creating a ZFS for OMVS</h2>
+
+          <p>Create a ZFS for their UNIX data and make sure to format it. This should be mounted at the user home directory listed in the profile's OMVS segment, which will need to be created if it has not been already. Some systems may have automation set up to automount user directories to USS.</p>
+
+          <pre><code>//DEFZFS    EXEC PGM=IDCAMS
+//SYSPRINT  DD SYSOUT=*
+//SYSUDUMP  DD SYSOUT=*
+//SYSIN DD *,SYMBOLS=(EXECSYS,SYMPRINT)
+  DEFINE CLUSTER (NAME(&lt;userid&gt;.USER.ZFS) -
+     ZFS                                   -
+     CYL(5 5) SHAREOPTIONS(3))
+/*
+//CREATZFS  EXEC PGM=IOEAGFMT,REGION=0M,
+//   PARM='-aggregate &lt;userid&gt;.USER.ZFS -compat'
+//SYSPRINT  DD SYSOUT=*</code></pre>
+
+          <h2>References</h2>
+
+          <p>[1] <a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=users-defining-protected-user-ids" target="_blank" rel="noopener">IBM — Defining Protected User IDs</a></p>
+          <p>More about the available parameters that can be used with ADDUSER and the TSO and OMVS segments can be found in <a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=syntax-adduser-add-user-profile" target="_blank" rel="noopener">IBM's documentation</a>.</p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

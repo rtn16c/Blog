@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IBM Sample Edit Macros — Return 16</title>
+  <meta name="description" content="IBM ships useful ISPF edit macros in SYS1.SISPSAMP. Learn about ISRONLY and ISRBOX, and why the difference between SYSPROC and SYSEXEC DDname concatenations matters.">
+  <link rel="canonical" href="https://return16.blog/2025/05/28/ibm-sample-edit-macros/">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> · ISPF
+          </div>
+          <h1 class="post-header__title">IBM Sample Edit Macros</h1>
+          <div class="post-header__meta">
+            <time datetime="2025-05-28">28 May 2025</time>
+            <div class="post-header__tags">
+              <span class="tag">ispf</span>
+              <span class="tag">edit-macros</span>
+              <span class="tag">ddnames</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p>IBM provides some sample ISPF edit macros in the <code>SYS1.SISPSAMP</code> library. These are useful as-is or as a basis for learning to write your own edit macros. Today we will discuss a few of them.</p>
+
+          <p>First of all, to use the edit macros we need to ensure that SISPSAMP is allocated. This can be done by including it in our login procedures under the SYSPROC concatenation, or with an ALLOC command. For example:</p>
+
+          <blockquote><p>ALLOC F(SYSPROC) DA('SYS1.SISPSAMP') SHR REU</p></blockquote>
+
+          <p>This is a TSO command, so remember to prefix it with <code>TSO</code> if you are entering it from an ISPF panel. Once they are allocated, edit macros are always called by entering the member name on the command line of your ISPF edit session.</p>
+
+          <h2>ISRONLY</h2>
+
+          <p>ONLY is an edit macro that combines the functionality of the FIND and EXCLUDE macros. It will display only the lines containing the string that you specify. Instead of doing <code>X ALL;F &lt;string&gt; ALL</code>, you can use:</p>
+
+          <blockquote><p>ONLY &lt;string&gt;</p></blockquote>
+
+          <h2>ISRBOX</h2>
+
+          <p>BOX is an edit macro that inserts a box drawn from characters into the open member you are editing. The box's top left corner will start at your cursor position. It will then reposition your cursor inside the box so you can begin to enter a note in it. It is useful for highlighting notes for yourself or other programmers.</p>
+
+          <h2>REXX vs CLIST — and Why DDnames Matter</h2>
+
+          <p>Something is different about these two edit macros — apart from their functionality.</p>
+
+          <p>If you look at the members, ISRONLY has a <code>/* REXX */</code> comment declaration at the top. ISRBOX does not — this is because ISRBOX is a CLIST program. Edit macros can be written in REXX or CLIST, and you will often see a combination of both where CLIST commands are used in a REXX program.</p>
+
+          <p>It is important we recognize the difference between the two, because z/OS processes them differently. That is why we allocated SISPSAMP to the <code>SYSPROC</code> concatenation, which can handle running both REXX and CLIST statements. If we were to allocate it to another concatenation like <code>SYSEXEC</code>, which can only process REXX statements, the CLIST macros would return with syntax errors because they are being read as if they are REXX.</p>
+
+          <p>This also goes for other DDname concatenations. If you misallocate a panel to <code>ISPMLIB</code>, when it was supposed to be under <code>ISPPLIB</code>, your panels will most likely not display.</p>
+
+          <h2>ISPF DDname Reference</h2>
+
+          <p>The base ISPF library types are:</p>
+
+          <ul>
+            <li><code>ISPMLIB</code> — Message library</li>
+            <li><code>ISPPLIB</code> — Panel library</li>
+            <li><code>ISPSLIB</code> — Skeleton library</li>
+            <li><code>ISPTLIB</code> — Table input library</li>
+            <li><code>ISPTABL</code> — Table output library</li>
+            <li><code>ISPFILE</code> — File tailoring output file</li>
+            <li><code>ISPLLIB</code> — Load module library</li>
+            <li><code>ISPILIB</code> — Image library</li>
+          </ul>
+
+          <p>Likewise, TSO uses:</p>
+
+          <ul>
+            <li><code>SYSPROC</code> — TSO/E CLISTs and REXX execs</li>
+            <li><code>SYSEXEC</code> — REXX execs only</li>
+          </ul>
+
+          <p>Getting these mixed up is a common source of mysterious errors when allocating libraries. Always double-check you're allocating to the right DDname for what your library contains.</p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

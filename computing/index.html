@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computing &amp; Technology — Return 16</title>
+  <meta name="description" content="Blog posts about general computing, technology history, programming, women in STEM, and everything else in tech.">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html" class="active">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../history.html">Post History</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper">
+
+      <div class="category-page-header">
+        <img src="../images/sparkle-heart.png" alt="" width="60" height="60">
+        <div class="category-page-header__text">
+          <h1>Computing &amp; Technology</h1>
+          <p>History · Programming · Women in STEM · General Tech</p>
+        </div>
+      </div>
+
+      <!-- Tag Filter -->
+      <div class="tag-filter" role="search" aria-label="Filter posts by tag">
+        <label class="tag-filter__label" for="tag-search">Filter by tag:</label>
+        <div class="tag-filter__controls">
+          <input class="tag-filter__input" id="tag-search" type="search" placeholder="e.g. history, programming…" aria-label="Search tags">
+          <div class="tag-filter__tags" aria-label="Available tags">
+            <button class="tag-filter__btn active" data-tag="">All</button>
+          </div>
+        </div>
+        <p class="tag-filter__count" aria-live="polite"></p>
+      </div>
+
+      <div class="post-grid" id="post-grid">
+        <div style="text-align:center; padding: 3rem 0; color: var(--text-muted);" id="coming-soon">
+          <img src="../images/pink-bow.png" alt="" style="width:48px; margin: 0 auto 1rem; opacity:0.5;">
+          <p style="font-family: var(--font-mono); font-size: 0.875rem;">Coming soon — posts about computing history, programming, and life in tech.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../history.html">Post History</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    (function () {
+      const grid = document.getElementById('post-grid');
+      const cards = Array.from(grid.querySelectorAll('article.post-card'));
+      if (!cards.length) return; // no posts yet
+      const btnAll = document.querySelector('.tag-filter__btn[data-tag=""]');
+      const tagBtns = document.querySelectorAll('.tag-filter__btn[data-tag]');
+      const input = document.getElementById('tag-search');
+      const countEl = document.querySelector('.tag-filter__count');
+      let activeTag = '';
+
+      function getCardTags(card) {
+        return Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.trim().toLowerCase());
+      }
+
+      function applyFilter() {
+        const query = input.value.trim().toLowerCase();
+        let visible = 0;
+        cards.forEach(card => {
+          const tags = getCardTags(card);
+          const matchTag = !activeTag || tags.includes(activeTag);
+          const matchQuery = !query || tags.some(t => t.includes(query));
+          const show = matchTag && matchQuery;
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        countEl.textContent = visible === cards.length ? '' : visible + ' of ' + cards.length + ' posts shown';
+      }
+
+      tagBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeTag = btn.dataset.tag;
+          tagBtns.forEach(b => b.classList.toggle('active', b === btn));
+          input.value = '';
+          applyFilter();
+        });
+      });
+
+      input.addEventListener('input', () => {
+        activeTag = '';
+        tagBtns.forEach(b => b.classList.toggle('active', b === btnAll));
+        applyFilter();
+      });
+    })();
+  </script>
+</body>
+</html>

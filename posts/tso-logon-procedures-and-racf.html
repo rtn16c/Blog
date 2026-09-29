@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSO Logon Procedures and RACF — Return 16</title>
+  <meta name="description" content="How to write a TSO logon procedure, define it to RACF using RDEFINE and PERMIT, and control which users can log on with which procs via the TSOPROC resource class.">
+  <link rel="canonical" href="https://return16.blog/2025/03/27/tso-logon-procedures-and-racf/">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> · RACF · TSO
+          </div>
+          <h1 class="post-header__title">TSO Logon Procedures and RACF</h1>
+          <div class="post-header__meta">
+            <time datetime="2025-03-27">27 March 2025</time>
+            <div class="post-header__tags">
+              <span class="tag">racf</span>
+              <span class="tag">tso</span>
+              <span class="tag">logon-procs</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p><code>SYS1.UADS</code> is the default dataset listing users that are allowed to use TSO/E [1]. Most sites that have RACF or other security products installed use those products to maintain their TSO/E logon information [2]. For a first time installation of RACF, IBM provides a command called <code>RACONVRT</code> to move users from <code>SYS1.UADS</code> to the RACF database [3]. Before you do this, RACF must be set up to protect TSO resources [4].</p>
+
+          <p>Once your site is using RACF to manage TSO users (or if your site already is), you can define specific logon procedures for specific users, and allow or disallow users to use certain logon procedures.</p>
+
+          <h2>Logon Procedures</h2>
+
+          <p>Say we have a given logon procedure we would like to define — <code>TSLOGP</code> in <code>SYS2.PROCLIB</code>.</p>
+
+          <p>At minimum, a logon procedure must have a terminal monitor program (TMP), which is a program that allows a user session to communicate with TSO/E [5]. You may be familiar with the <code>IKJEFT01</code>, <code>IKJEFT1A</code>, and <code>IKJEFT1B</code> TMPs, which can also be used with a JCL job to run commands that you might typically enter in your session in an environment outside of your session — this can keep your screen free so you can keep working if it's a command that will take a long time to execute.</p>
+
+          <p>Let's assume the <code>SYS2.PROCLIB(TSLOGP)</code> procedure looks something like this:</p>
+
+          <pre><code>//TSLOGP     EXEC PGM=IKJEFT01,DYNAMNBR=20
+//SYSIN      DD TERM=TS
+//SYSPRINT   DD TERM=TS</code></pre>
+
+          <p>This is a minimal logon procedure [6] — it does not define things such as ISPF panels, or other macros or software products. With this logon procedure a user will be limited to working directly from TSO/E.</p>
+
+          <p>Like the name of a job in the job card, the first <code>//TSLOGP</code> is the name of our procedure. We are executing <code>IKJEFT01</code>, and the SYSIN and SYSPRINT DDs are both set to the user's terminal session. This allows us to enter TSO commands to <code>IKJEFT01</code> and for it to return the output to our terminal. The <code>DYNAMNBR</code> param refers to how many datasets you can dynamically allocate at the same time [6] — these are datasets allocated with the TSO <code>ALLOC</code> command, for example.</p>
+
+          <h2>Defining Logon Procedures to RACF and Permitting Their Use</h2>
+
+          <p>With your procedure in place, you need to define it to RACF and permit access:</p>
+
+          <pre><code>/* Define the procedure to RACF with no universal access */
+RDEFINE TSOPROC TSLOGP UACC(NONE)
+
+/* Permit a specific user to use it */
+PERMIT TSLOGP CLASS(TSOPROC) ID(&lt;your id&gt;) ACCESS(READ)
+
+/* Refresh the TSOPROC class */
+SETROPTS RACLIST(TSOPROC) REFRESH</code></pre>
+
+          <p>If you want everyone to be able to use the procedure, use <code>UACC(READ)</code> when defining it and skip the PERMIT step.</p>
+
+          <p>After the SETROPTS REFRESH, you should be able to log on with your new procedure. To specify the procedure at logon time, enter it in the Logon Procedure field on the TSO/E logon panel. To set it as a user's default, use the PROC keyword in their RACF TSO segment — see <a href="adding-users-to-racf.html">Adding Users to RACF</a> for more on that.</p>
+
+          <h2>References</h2>
+
+          <ol>
+            <li><a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=set-content-structure-uads" target="_blank" rel="noopener">IBM — Content and structure of the UADS</a></li>
+            <li><a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=set-using-racf-data-base-maintain-tsoe-users" target="_blank" rel="noopener">IBM — Using the RACF data base to maintain TSO/E users</a></li>
+            <li><a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=base-using-raconvrt-command" target="_blank" rel="noopener">IBM — Using the RACONVRT command</a></li>
+            <li><a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=tsoe-protecting-tso-resources" target="_blank" rel="noopener">IBM — Protecting TSO resources</a></li>
+            <li><a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=customization-executing-terminal-monitor-program" target="_blank" rel="noopener">IBM — Executing the terminal monitor program</a></li>
+            <li><a href="https://www.ibm.com/docs/en/zos/3.1.0?topic=procedures-writing-logon-procedure" target="_blank" rel="noopener">IBM — Writing a logon procedure</a></li>
+          </ol>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

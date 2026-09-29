@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purging the JES Spool in SDSF — Return 16</title>
+  <meta name="description" content="Beyond placing a P against individual jobs — how to purge ranges of job outputs and use JES2 $PO commands to bulk-clear the JES spool with precision.">
+  <link rel="canonical" href="https://return16.blog/2025/02/22/purging-the-jes-spool-in-sdsf/">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../mainframe/index.html">Mainframe</a> · JES2 · SDSF
+          </div>
+          <h1 class="post-header__title">Purging the JES Spool in SDSF</h1>
+          <div class="post-header__meta">
+            <time datetime="2025-02-22">22 February 2025</time>
+            <div class="post-header__tags">
+              <span class="tag">jes2</span>
+              <span class="tag">sdsf</span>
+              <span class="tag">spool</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p>Many mainframe beginners will be familiar with how to manually purge job outputs from the JES spool one by one — that is, accessing the job status log via <code>SDSF;ST</code> and placing a <code>P</code> against the job entry to be purged. But there are ways we can purge multiple jobs without having to manually enter a <code>P</code> against each one.</p>
+
+          <p>Most site setups will have automation in place to clear the spool after a given amount of time has passed, but for various reasons we may want to clean up the spool sooner.</p>
+
+          <h2>Method 1: Purging a Range</h2>
+
+          <p>Let's consider that we are viewing the <code>SDSF;ST</code> panel with a filter of <code>USER 'our UID'</code> applied. There is a block of multiple job outputs in a row we wish to clear.</p>
+
+          <p>To purge a range of job outputs we can place a <code>//P</code> in the action column of the first job in the series, and a <code>//</code> in the last job of the series — much like entering block commands in an ISPF edit session. Hitting Enter will purge the selected job outputs (inclusive) and everything listed between them.</p>
+
+          <h2>Method 2: JES2 Commands</h2>
+
+          <p>JES2 commands can be entered the same way most MVS commands are — via the console, or in any SDSF panel prefixed with a <code>/</code>. JES2 commands are also prefixed with a <code>$</code> to differentiate them from other system and product commands.</p>
+
+          <p>The command:</p>
+
+          <blockquote><p>/$POJQ,JM=*</p></blockquote>
+
+          <p>— or just <code>$POJQ,JM=*</code> from a console — will <strong>P</strong>urge <strong>O</strong>utput from the <strong>J</strong>ob <strong>Q</strong>ueue under the <strong>J</strong>ob <strong>M</strong>ask <code>*</code>. As you may know from other MVS conventions, the wildcard <code>*</code> represents "any". So the above command will purge <em>ALL</em> job outputs. Be careful when issuing this as you may accidentally purge job outputs you didn't mean to.</p>
+
+          <p>Luckily, <code>$PO</code> offers many different parameters to target only certain subsections of job outputs. These parameters can also be mixed and matched within the same command to narrow down the subsection even further:</p>
+
+          <blockquote><p>$POJQ,JM=JOB12*    — Purge job outputs beginning with the name JOB12
+$POJQ,Q=B          — Purge job outputs in class B
+$POJQ,days&gt;2       — Purge job outputs that are older than two days</p></blockquote>
+
+          <p>For a full list of parameters and filtering options, refer to the JES2 Commands reference in the IBM documentation.</p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

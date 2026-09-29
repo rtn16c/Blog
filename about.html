@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Return 16</title>
+  <meta name="description" content="Return 16 is a blog about mainframes, z/OS, computing, and experiences as a woman in STEM. Mainframing is for everyone.">
+  <link rel="icon" href="images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="mainframe/index.html">Mainframe</a>
+        <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="resources.html">Resources</a>
+        <a href="history.html">Post History</a>
+        <a href="about.html" class="active">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <header class="page-header">
+        <h1 class="page-header__title">
+          <img src="images/sparkle-heart.png" alt="" width="36" height="36" style="vertical-align:middle;">
+          About
+        </h1>
+      </header>
+
+      <div class="page-body">
+        <p>Return 16 is a blog site I started to write about anything and everything to do with computers and mainframes. Including tutorials, tips and tricks, new things I've learned, and my experiences as a woman in STEM.</p>
+
+        <p><strong>Mainframing is for everyone.</strong></p>
+
+        <p>I work as a mainframe systems programmer — which means I spend my days (and occasionally my nights) wrestling z/OS and reading a lot of IBM documentation. This blog is part learning log, part reference notebook, part me just yapping into the void. Even when I'm not staring at a green screen, I'm usually still messing around with technology.</p>
+
+        <p>Keep in touch with my LinkedIn! I post a lot of events happening in the Melbourne area and Online, and I'm also the Chapter Lead for the Melbourne New to Z Group and an IBM Champion.</p>
+
+        <a class="btn" href="https://www.linkedin.com/in/ashlee-jackson-954596226/" target="_blank" rel="noopener noreferrer">
+          Connect on LinkedIn ↗
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="mainframe/index.html">Mainframe</a>
+        <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="resources.html">Resources</a>
+        <a href="history.html">Post History</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>
