@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "topic": "Algebra",
+    "question": "What is the quadratic formula?",
+    "answer": "x = (−b ± √(b² − 4ac)) / 2a\n\nUsed to solve ax² + bx + c = 0 when factorising is not straightforward."
+  },
+  {
+    "id": 2,
+    "topic": "Algebra",
+    "question": "How do you expand (a + b)²?",
+    "answer": "(a + b)² = a² + 2ab + b²\n\nExample: (x + 3)² = x² + 6x + 9"
+  },
+  {
+    "id": 3,
+    "topic": "Algebra",
+    "question": "How do you expand (a − b)²?",
+    "answer": "(a − b)² = a² − 2ab + b²\n\nExample: (x − 4)² = x² − 8x + 16"
+  },
+  {
+    "id": 4,
+    "topic": "Algebra",
+    "question": "What is the difference of two squares?",
+    "answer": "a² − b² = (a + b)(a − b)\n\nExample: x² − 9 = (x + 3)(x − 3)"
+  },
+  {
+    "id": 5,
+    "topic": "Algebra",
+    "question": "What does the discriminant (b² − 4ac) tell you?",
+    "answer": "• b² − 4ac > 0 → two distinct real roots\n• b² − 4ac = 0 → one repeated root\n• b² − 4ac < 0 → no real roots (complex roots)"
+  },
+  {
+    "id": 6,
+    "topic": "Algebra",
+    "question": "What are the laws of indices (exponent rules)?",
+    "answer": "• aᵐ × aⁿ = aᵐ⁺ⁿ\n• aᵐ ÷ aⁿ = aᵐ⁻ⁿ\n• (aᵐ)ⁿ = aᵐⁿ\n• a⁰ = 1\n• a⁻ⁿ = 1/aⁿ\n• a^(1/n) = ⁿ√a"
+  },
+  {
+    "id": 7,
+    "topic": "Geometry",
+    "question": "What is the area of a circle?",
+    "answer": "A = πr²\n\nWhere r is the radius of the circle."
+  },
+  {
+    "id": 8,
+    "topic": "Geometry",
+    "question": "What is the circumference of a circle?",
+    "answer": "C = 2πr  or  C = πd\n\nWhere r is the radius and d is the diameter."
+  },
+  {
+    "id": 9,
+    "topic": "Geometry",
+    "question": "State Pythagoras' theorem.",
+    "answer": "a² + b² = c²\n\nIn a right-angled triangle, the square of the hypotenuse (c) equals the sum of the squares of the other two sides."
+  },
+  {
+    "id": 10,
+    "topic": "Geometry",
+    "question": "What is the area of a triangle?",
+    "answer": "A = ½ × base × height\n\nOr using two sides and the included angle:\nA = ½ab sin(C)"
+  },
+  {
+    "id": 11,
+    "topic": "Trigonometry",
+    "question": "What are the three basic trig ratios (SOHCAHTOA)?",
+    "answer": "sin θ = Opposite / Hypotenuse\ncos θ = Adjacent / Hypotenuse\ntan θ = Opposite / Adjacent\n\nMemory aid: SOHCAHTOA"
+  },
+  {
+    "id": 12,
+    "topic": "Trigonometry",
+    "question": "What is the sine rule?",
+    "answer": "a / sin A = b / sin B = c / sin C\n\nUsed when you know: two angles and one side, or two sides and a non-included angle."
+  },
+  {
+    "id": 13,
+    "topic": "Trigonometry",
+    "question": "What is the cosine rule?",
+    "answer": "a² = b² + c² − 2bc cos(A)\n\nUsed when you know: two sides and the included angle, or all three sides."
+  },
+  {
+    "id": 14,
+    "topic": "Trigonometry",
+    "question": "What are the exact values for sin, cos, and tan at 30°, 45°, and 60°?",
+    "answer": "30°: sin = ½,  cos = √3/2,  tan = 1/√3\n45°: sin = 1/√2, cos = 1/√2, tan = 1\n60°: sin = √3/2, cos = ½,  tan = √3"
+  },
+  {
+    "id": 15,
+    "topic": "Number",
+    "question": "What is the difference between rational and irrational numbers?",
+    "answer": "Rational: can be written as p/q where p, q are integers and q ≠ 0. Examples: ½, 0.75, −3.\n\nIrrational: cannot be written as a fraction. Examples: √2, π, e."
+  },
+  {
+    "id": 16,
+    "topic": "Number",
+    "question": "What are the rules for multiplying and dividing negative numbers?",
+    "answer": "+ × + = +\n− × − = +\n+ × − = −\n− × + = −\n\nSame signs → positive result. Different signs → negative result."
+  },
+  {
+    "id": 17,
+    "topic": "Calculus",
+    "question": "What is the power rule for differentiation?",
+    "answer": "If f(x) = xⁿ, then f′(x) = nxⁿ⁻¹\n\nExample: f(x) = x³ → f′(x) = 3x²"
+  },
+  {
+    "id": 18,
+    "topic": "Calculus",
+    "question": "What is the power rule for integration?",
+    "answer": "∫xⁿ dx = xⁿ⁺¹ / (n+1) + C  (where n ≠ −1)\n\nExample: ∫x² dx = x³/3 + C"
+  }
+]

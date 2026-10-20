@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maths Flash Cards — Return 16</title>
+  <meta name="description" content="Practise mathematics with interactive flash cards covering algebra, geometry, trigonometry, calculus, and more.">
+  <link rel="icon" href="../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html" class="active">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper">
+
+      <div class="flashcard-page-header">
+        <a href="../index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Mathematics
+        </a>
+        <h1>Maths Flash Cards</h1>
+        <p>Click a card to reveal the answer. Use the topic filter to focus on one area.</p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="fc-progress-bar-wrap" id="fc-progress-wrap">
+        <div class="fc-progress-bar" id="fc-progress-bar"></div>
+        <span class="fc-progress-label" id="fc-progress-label" aria-live="polite"></span>
+      </div>
+
+      <!-- Topic filter -->
+      <div class="fc-filter" role="search" aria-label="Filter flash cards by topic">
+        <span class="fc-filter__label">Topic:</span>
+        <div class="fc-filter__btns" id="fc-topic-btns" aria-label="Available topics">
+          <button class="fc-filter__btn active" data-topic="">All</button>
+        </div>
+        <span class="fc-filter__count" id="fc-count" aria-live="polite"></span>
+        <button class="fc-btn fc-btn--ghost" id="fc-show-learned" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Show learned
+        </button>
+      </div>
+
+      <!-- Deck controls -->
+      <div class="fc-controls">
+        <button class="fc-btn fc-btn--secondary" id="fc-prev" aria-label="Previous card">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Prev
+        </button>
+        <span class="fc-progress" id="fc-progress" aria-live="polite">Card 1 of 1</span>
+        <button class="fc-btn fc-btn--secondary" id="fc-next" aria-label="Next card">
+          Next
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="fc-btn fc-btn--shuffle" id="fc-shuffle" aria-label="Shuffle cards">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+          Shuffle
+        </button>
+      </div>
+
+      <!-- Flash card -->
+      <div class="fc-scene" id="fc-scene" aria-label="Flash card">
+        <div class="fc-card" id="fc-card" role="button" tabindex="0" aria-pressed="false" aria-label="Flash card — click to flip">
+          <div class="fc-card__face fc-card__face--front">
+            <span class="fc-card__topic" id="fc-topic-label"></span>
+            <p class="fc-card__question" id="fc-question"></p>
+            <span class="fc-card__hint">Click to reveal answer</span>
+          </div>
+          <div class="fc-card__face fc-card__face--back">
+            <span class="fc-card__topic" id="fc-topic-label-back"></span>
+            <pre class="fc-card__answer" id="fc-answer"></pre>
+            <div class="fc-card__back-actions">
+              <button class="fc-btn fc-btn--learned" id="fc-mark-learned" aria-pressed="false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                <span id="fc-learned-label">Mark as learned</span>
+              </button>
+            </div>
+            <span class="fc-card__hint">Click card to see question</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="fc-empty" id="fc-empty" hidden>No cards found for this topic.</p>
+      <p class="fc-empty" id="fc-all-learned" hidden>
+        🎉 All cards in this set are marked as learned!
+        <button class="fc-btn fc-btn--ghost fc-btn--inline" id="fc-reset-learned">Reset learned cards</button>
+      </p>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    (function () {
+      // --- Card data (keep in sync with data.json) ---
+      const allCards = [
+  {"id":1,"topic":"Algebra","question":"What is the quadratic formula?","answer":"x = (−b ± √(b² − 4ac)) / 2a\n\nUsed to solve ax² + bx + c = 0 when factorising is not straightforward."},
+  {"id":2,"topic":"Algebra","question":"How do you expand (a + b)²?","answer":"(a + b)² = a² + 2ab + b²\n\nExample: (x + 3)² = x² + 6x + 9"},
+  {"id":3,"topic":"Algebra","question":"How do you expand (a − b)²?","answer":"(a − b)² = a² − 2ab + b²\n\nExample: (x − 4)² = x² − 8x + 16"},
+  {"id":4,"topic":"Algebra","question":"What is the difference of two squares?","answer":"a² − b² = (a + b)(a − b)\n\nExample: x² − 9 = (x + 3)(x − 3)"},
+  {"id":5,"topic":"Algebra","question":"What does the discriminant (b² − 4ac) tell you?","answer":"• b² − 4ac > 0 → two distinct real roots\n• b² − 4ac = 0 → one repeated root\n• b² − 4ac < 0 → no real roots (complex roots)"},
+  {"id":6,"topic":"Algebra","question":"What are the laws of indices (exponent rules)?","answer":"• aᵐ × aⁿ = aᵐ⁺ⁿ\n• aᵐ ÷ aⁿ = aᵐ⁻ⁿ\n• (aᵐ)ⁿ = aᵐⁿ\n• a⁰ = 1\n• a⁻ⁿ = 1/aⁿ\n• a^(1/n) = ⁿ√a"},
+  {"id":7,"topic":"Geometry","question":"What is the area of a circle?","answer":"A = πr²\n\nWhere r is the radius of the circle."},
+  {"id":8,"topic":"Geometry","question":"What is the circumference of a circle?","answer":"C = 2πr  or  C = πd\n\nWhere r is the radius and d is the diameter."},
+  {"id":9,"topic":"Geometry","question":"State Pythagoras' theorem.","answer":"a² + b² = c²\n\nIn a right-angled triangle, the square of the hypotenuse (c) equals the sum of the squares of the other two sides."},
+  {"id":10,"topic":"Geometry","question":"What is the area of a triangle?","answer":"A = ½ × base × height\n\nOr using two sides and the included angle:\nA = ½ab sin(C)"},
+  {"id":11,"topic":"Trigonometry","question":"What are the three basic trig ratios (SOHCAHTOA)?","answer":"sin θ = Opposite / Hypotenuse\ncos θ = Adjacent / Hypotenuse\ntan θ = Opposite / Adjacent\n\nMemory aid: SOHCAHTOA"},
+  {"id":12,"topic":"Trigonometry","question":"What is the sine rule?","answer":"a / sin A = b / sin B = c / sin C\n\nUsed when you know: two angles and one side, or two sides and a non-included angle."},
+  {"id":13,"topic":"Trigonometry","question":"What is the cosine rule?","answer":"a² = b² + c² − 2bc cos(A)\n\nUsed when you know: two sides and the included angle, or all three sides."},
+  {"id":14,"topic":"Trigonometry","question":"What are the exact values for sin, cos, and tan at 30°, 45°, and 60°?","answer":"30°: sin = ½,  cos = √3/2,  tan = 1/√3\n45°: sin = 1/√2, cos = 1/√2, tan = 1\n60°: sin = √3/2, cos = ½,  tan = √3"},
+  {"id":15,"topic":"Number","question":"What is the difference between rational and irrational numbers?","answer":"Rational: can be written as p/q where p, q are integers and q ≠ 0. Examples: ½, 0.75, −3.\n\nIrrational: cannot be written as a fraction. Examples: √2, π, e."},
+  {"id":16,"topic":"Number","question":"What are the rules for multiplying and dividing negative numbers?","answer":"+ × + = +\n− × − = +\n+ × − = −\n− × + = −\n\nSame signs → positive result. Different signs → negative result."},
+  {"id":17,"topic":"Calculus","question":"What is the power rule for differentiation?","answer":"If f(x) = xⁿ, then f′(x) = nxⁿ⁻¹\n\nExample: f(x) = x³ → f′(x) = 3x²"},
+  {"id":18,"topic":"Calculus","question":"What is the power rule for integration?","answer":"∫xⁿ dx = xⁿ⁺¹ / (n+1) + C  (where n ≠ −1)\n\nExample: ∫x² dx = x³/3 + C"}
+];
+
+      const STORAGE_KEY = 'r16_fc_learned';
+
+      // --- State ---
+      let learned      = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+      let showLearned  = false;
+      let deck         = [];
+      let currentIndex = 0;
+      let isFlipped    = false;
+      let activeTopic  = '';
+
+      // --- DOM refs ---
+      const card            = document.getElementById('fc-card');
+      const scene           = document.getElementById('fc-scene');
+      const questionEl      = document.getElementById('fc-question');
+      const answerEl        = document.getElementById('fc-answer');
+      const topicLabelF     = document.getElementById('fc-topic-label');
+      const topicLabelB     = document.getElementById('fc-topic-label-back');
+      const progressEl      = document.getElementById('fc-progress');
+      const emptyEl         = document.getElementById('fc-empty');
+      const allLearnedEl    = document.getElementById('fc-all-learned');
+      const countEl         = document.getElementById('fc-count');
+      const prevBtn         = document.getElementById('fc-prev');
+      const nextBtn         = document.getElementById('fc-next');
+      const shuffleBtn      = document.getElementById('fc-shuffle');
+      const topicBtns       = document.getElementById('fc-topic-btns');
+      const markLearnedBtn  = document.getElementById('fc-mark-learned');
+      const learnedLabel    = document.getElementById('fc-learned-label');
+      const showLearnedBtn  = document.getElementById('fc-show-learned');
+      const resetLearnedBtn = document.getElementById('fc-reset-learned');
+      const progressBar     = document.getElementById('fc-progress-bar');
+      const progressLabel   = document.getElementById('fc-progress-label');
+
+      // --- Build topic filter buttons ---
+      const topics = [...new Set(allCards.map(c => c.topic))].sort();
+      topics.forEach(topic => {
+        const btn = document.createElement('button');
+        btn.className = 'fc-filter__btn';
+        btn.dataset.topic = topic;
+        btn.textContent = topic;
+        topicBtns.appendChild(btn);
+      });
+
+      // --- Persist learned set ---
+      function saveLeaned() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...learned]));
+      }
+
+      // --- Build active deck from current topic + learned filter ---
+      function buildDeck() {
+        let source = activeTopic ? allCards.filter(c => c.topic === activeTopic) : [...allCards];
+        return showLearned ? source : source.filter(c => !learned.has(c.id));
+      }
+
+      // --- Update the progress bar ---
+      function updateProgressBar() {
+        const total   = activeTopic ? allCards.filter(c => c.topic === activeTopic).length : allCards.length;
+        const learnedInScope = activeTopic
+          ? allCards.filter(c => c.topic === activeTopic && learned.has(c.id)).length
+          : learned.size;
+        const pct = total === 0 ? 0 : Math.round((learnedInScope / total) * 100);
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = learnedInScope === 0
+          ? ''
+          : `${learnedInScope} of ${total} learned`;
+      }
+
+      // --- Render current card ---
+      function renderCard() {
+        const topicSource = activeTopic ? allCards.filter(c => c.topic === activeTopic) : allCards;
+        const allLearned  = topicSource.length > 0 && topicSource.every(c => learned.has(c.id));
+
+        const isEmpty = deck.length === 0;
+        scene.hidden       = isEmpty;
+        document.querySelector('.fc-controls').hidden = isEmpty;
+        emptyEl.hidden     = !isEmpty || allLearned;
+        allLearnedEl.hidden = !allLearned;
+
+        updateProgressBar();
+
+        if (isEmpty) { countEl.textContent = ''; return; }
+
+        const c = deck[currentIndex];
+        questionEl.textContent  = c.question;
+        answerEl.textContent    = c.answer;
+        topicLabelF.textContent = c.topic;
+        topicLabelB.textContent = c.topic;
+        progressEl.textContent  = `Card ${currentIndex + 1} of ${deck.length}`;
+        countEl.textContent     = activeTopic ? `${deck.length} card${deck.length !== 1 ? 's' : ''}` : '';
+
+        // Update learned button state for this card
+        const isLearned = learned.has(c.id);
+        markLearnedBtn.setAttribute('aria-pressed', isLearned);
+        markLearnedBtn.classList.toggle('is-learned', isLearned);
+        learnedLabel.textContent = isLearned ? 'Learned ✓' : 'Mark as learned';
+
+        // Reset flip
+        isFlipped = false;
+        card.classList.remove('is-flipped');
+        card.setAttribute('aria-pressed', 'false');
+        card.setAttribute('aria-label', 'Flash card — click to flip');
+      }
+
+      // --- Flip ---
+      function flipCard() {
+        isFlipped = !isFlipped;
+        card.classList.toggle('is-flipped', isFlipped);
+        card.setAttribute('aria-pressed', isFlipped);
+        card.setAttribute('aria-label', isFlipped ? 'Flash card showing answer — click to see question' : 'Flash card — click to flip');
+      }
+
+      // --- Navigate ---
+      function goTo(index) {
+        currentIndex = (index + deck.length) % deck.length;
+        renderCard();
+      }
+
+      // --- Shuffle ---
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      // --- Topic filter ---
+      function applyTopic(topic) {
+        activeTopic = topic;
+        deck = buildDeck();
+        currentIndex = 0;
+        renderCard();
+        topicBtns.querySelectorAll('.fc-filter__btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.topic === topic);
+        });
+      }
+
+      // --- Update show-learned toggle label ---
+      function updateShowLearnedBtn() {
+        showLearnedBtn.setAttribute('aria-pressed', showLearned);
+        showLearnedBtn.classList.toggle('is-active', showLearned);
+        showLearnedBtn.querySelector('span') === null
+          ? null
+          : null; // label handled below
+        showLearnedBtn.innerHTML = showLearned
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hide learned`
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Show learned`;
+      }
+
+      // --- Events ---
+      card.addEventListener('click', flipCard);
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); } });
+
+      prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
+      nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
+
+      shuffleBtn.addEventListener('click', () => {
+        deck = shuffle([...deck]);
+        currentIndex = 0;
+        renderCard();
+      });
+
+      topicBtns.addEventListener('click', e => {
+        const btn = e.target.closest('.fc-filter__btn');
+        if (btn) applyTopic(btn.dataset.topic);
+      });
+
+      markLearnedBtn.addEventListener('click', e => {
+        e.stopPropagation(); // don't flip the card
+        const c = deck[currentIndex];
+        if (learned.has(c.id)) {
+          learned.delete(c.id);
+        } else {
+          learned.add(c.id);
+          // Auto-advance to next unlearned card (unless showing learned)
+          if (!showLearned) {
+            deck = buildDeck();
+            currentIndex = Math.min(currentIndex, deck.length - 1);
+          }
+        }
+        saveLeaned();
+        renderCard();
+      });
+
+      showLearnedBtn.addEventListener('click', () => {
+        showLearned = !showLearned;
+        deck = buildDeck();
+        currentIndex = 0;
+        updateShowLearnedBtn();
+        renderCard();
+      });
+
+      resetLearnedBtn.addEventListener('click', () => {
+        learned.clear();
+        saveLeaned();
+        deck = buildDeck();
+        currentIndex = 0;
+        renderCard();
+      });
+
+      // --- Init ---
+      deck = buildDeck();
+      renderCard();
+    })();
+  </script>
+</body>
+</html>
