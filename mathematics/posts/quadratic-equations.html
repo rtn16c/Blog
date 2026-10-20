@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quadratics 1: Expanding, Factorising, and Solving in Standard Form — Return 16</title>
+  <meta name="description" content="An introduction to quadratic equations — standard form, coefficients, expanding, factorising, and solving. With worked examples throughout.">
+  <link rel="icon" href="../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../css/style.css">
+
+  <!-- KaTeX for mathematics rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ],
+      throwOnError: false
+    });"></script>
+
+  <style>
+    /* Slightly more breathing room for display-mode KaTeX blocks */
+    .katex-display {
+      margin: 1.25rem 0;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html" class="active">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../../mathematics/index.html">Mathematics</a> · Algebra
+          </div>
+          <h1 class="post-header__title">Quadratics 1: Expanding, Factorising, and Solving in Standard Form</h1>
+          <div class="post-header__meta">
+            <time datetime="2026-10-20">20 October 2026</time>
+            <div class="post-header__tags">
+              <span class="tag">algebra</span>
+              <span class="tag">quadratics</span>
+              <span class="tag">factorising</span>
+              <span class="tag">polynomials</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <h2>What is a Quadratic Equation?</h2>
+          
+          <p>Simply put, a quadratic equation is one where \(x^2\) is the highest power of \(x\). Equations where the highest power is just \(x\) (i.e. \(x^1\)) are <strong>linear</strong>. Equations where the highest power is \(x^3\) are <strong>cubic</strong>. Equations with even higher powers are all forms of <strong>polynomial</strong> expressions — a quadratic is a polynomial, but not all polynomials are quadratic.</p>
+
+          <h2>Standard Form</h2>
+
+          <p>The standard form of a quadratic equation is:</p>
+
+          $$ax^2 + bx + c = 0$$
+
+          <p>Where \(a \neq 0\) — if \(a\) were zero, the \(ax^2\) term would vanish and we would just have \(bx + c = 0\), which is a linear equation, not a quadratic.</p>
+
+          <p>In standard form:</p>
+
+          <ul>
+            <li>\(a\) is the <strong>coefficient</strong> of \(x^2\)</li>
+            <li>\(b\) is the <strong>coefficient</strong> of \(x\)</li>
+            <li>\(c\) is the <strong>constant</strong></li>
+          </ul>
+
+          <p>For a concrete example, take:</p>
+
+          $$x^2 + 5x + 6 = 0$$
+
+          <p>Here \(a = 1\), \(b = 5\), and \(c = 6\).</p>
+
+          <div class="info-box">
+            <strong>Remember:</strong> Just because you can't see a number doesn't mean it isn't there. All three of these are still quadratic equations:
+            <ul style="margin: 0.5rem 0 0 1.25rem;">
+              <li>\(x^2 - 12 = 0\)</li>
+              <li>\(x^2 + 5x = 0\)</li>
+              <li>\(x^2 = 0\)</li>
+            </ul>
+            Writing in the hidden zero terms to match standard form more closely:
+            <ul style="margin: 0.5rem 0 0 1.25rem;">
+              <li>\(x^2 + 0x - 12 = 0\)</li>
+              <li>\(x^2 + 5x + 0 = 0\)</li>
+              <li>\(x^2 + 0x + 0 = 0\)</li>
+            </ul>
+          </div>
+
+          <h2>Rearranging into Standard Form</h2>
+
+          <p>A quadratic equation isn't always handed to you in standard form — you may need to rearrange it first. For example:</p>
+
+          $$x^2 + 5x = 6$$
+
+          <p>Whatever we do to one side of an equation we must do to the other to keep it balanced. Subtracting 6 from both sides gives:</p>
+
+          $$x^2 + 5x - 6 = 0$$
+
+          <p>Now it is in standard form and ready to work with.</p>
+
+          <h2>Expanding</h2>
+
+          <p>Quadratic expressions can appear in different forms — one common form is two sets of brackets multiplied together, such as:</p>
+
+          $$(x + 2)(x + 3)$$
+
+          <p>To <strong>expand</strong> this, every term in the first bracket must be multiplied by every term in the second bracket. A handy mnemonic for two-term brackets is <strong>FOIL</strong>:</p>
+
+          <ul>
+            <li><strong>F</strong>irst — the first terms of each bracket: \(x \cdot x = x^2\)</li>
+            <li><strong>O</strong>utside — the outermost terms of the whole expression: \(x \cdot 3 = 3x\)</li>
+            <li><strong>I</strong>nside — the innermost terms of the whole expression: \(2 \cdot x = 2x\)</li>
+            <li><strong>L</strong>ast — the last terms of each bracket: \(2 \cdot 3 = 6\)</li>
+          </ul>
+
+          <div class="info-box">
+            <strong>Note:</strong> FOIL only works for expressions that are two sets of brackets with two terms each. With more brackets the approach is the same in principle — each term in each bracket must be multiplied by each term in every other bracket — but you'll need to be more systematic.
+          </div>
+
+          <p>Putting the FOIL results together:</p>
+
+          $$x^2 + 3x + 2x + 6$$
+
+          <p>The two middle terms both contain \(x\) to the same power, so we can collect them:</p>
+
+          $$x^2 + 5x + 6$$
+
+          <h2>Factorising</h2>
+
+          <p>Factorising is the reverse of expanding. We start with a standard-form expression and want to write it as a product of two brackets. This makes solving the equation much easier (covered in the next section).</p>
+
+          <p>The process in six steps:</p>
+
+          <ol>
+            <li>Multiply \(a\) and \(c\)</li>
+            <li>Find two numbers that <strong>add to \(b\)</strong> and <strong>multiply to \(a \times c\)</strong></li>
+            <li>Split the middle term using those two numbers</li>
+            <li>Group the four terms into pairs</li>
+            <li>Factorise each pair</li>
+            <li>Factor out the common bracket</li>
+          </ol>
+
+          <h3>Example 1 — coefficient of \(x^2\) is 1</h3>
+
+          $$x^2 + 13x + 40$$
+
+          <p>Here \(a = 1\), so \(a \times c = 1 \times 40 = 40\). We need two numbers that add to \(13\) and multiply to \(40\). That's <strong>5 and 8</strong>.</p>
+
+          <p>Split the middle term:</p>
+
+          $$x^2 + 8x + 5x + 40$$
+
+          <p>Group into pairs:</p>
+
+          $$(x^2 + 8x) + (5x + 40)$$
+
+          <p>Factorise each group — the first pair shares \(x\), the second shares \(5\):</p>
+
+          $$x(x + 8) + 5(x + 8)$$
+
+          <p>Both terms now contain \((x + 8)\), so factor that out:</p>
+
+          $$(x + 5)(x + 8)$$
+
+          <h3>Example 2 — coefficient of \(x^2\) is not 1</h3>
+
+          $$3x^2 + 11x + 6$$
+
+          <p>Here \(a = 3\), so \(a \times c = 3 \times 6 = 18\). We need two numbers that add to \(11\) and multiply to \(18\). That's <strong>9 and 2</strong>.</p>
+
+          <p>Split the middle term:</p>
+
+          $$3x^2 + 9x + 2x + 6$$
+
+          <p>Group into pairs:</p>
+
+          $$(3x^2 + 9x) + (2x + 6)$$
+
+          <p>Factorise each group — the first shares \(3x\), the second shares \(2\):</p>
+
+          $$3x(x + 3) + 2(x + 3)$$
+
+          <div class="info-box">
+            <strong>Remember:</strong> If the brackets don't match at this point, check your signs and your common factors. Sometimes you need to take out a negative to make them match.
+          </div>
+
+          <p>Both terms contain \((x + 3)\), so factor that out:</p>
+
+          $$(3x + 2)(x + 3)$$
+
+          <h2>Solving</h2>
+
+          <p>Recall that the standard form is \(ax^2 + bx + c = 0\), so our factorised equation is:</p>
+
+          $$(3x + 2)(x + 3) = 0$$
+
+          <p>For this product to equal zero, at least one of the two brackets must be zero. We can therefore solve each bracket independently:</p>
+
+          $$3x + 2 = 0 \implies 3x = -2 \implies x = -\tfrac{2}{3}$$
+
+          $$x + 3 = 0 \implies x = -3$$
+
+          <p>The solution is \(x = -\dfrac{2}{3}\) or \(x = -3\).</p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../../mathematics/index.html" class="back-link">← Back to Mathematics</a>
+        <a href="../../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

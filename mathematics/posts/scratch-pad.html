@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scratch Pad — Return 16</title>
+  <meta name="description" content="A personal reference of difficult maths problems encountered and how they were solved.">
+  <link rel="icon" href="../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html" class="active">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../../mathematics/index.html">Mathematics</a>
+          </div>
+          <h1 class="post-header__title">Scratch Pad</h1>
+          <div class="post-header__meta">
+            <time datetime="2026-10-20">20 October 2026</time>
+            <div class="post-header__tags">
+              <span class="tag">reference</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <!-- Add problems and solutions here as you encounter them -->
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../../mathematics/index.html" class="back-link">← Back to Mathematics</a>
+        <a href="../../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathematics — Return 16</title>
+  <meta name="description" content="Blog posts about mathematics — working through high school maths and beyond, from algebra and geometry to calculus and university-level topics.">
+  <link rel="icon" href="../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../mathematics/index.html" class="active">Mathematics</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../history.html">Post History</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper">
+
+      <div class="category-page-header">
+        <img src="../images/sparkle-heart.png" alt="" width="60" height="60">
+        <div class="category-page-header__text">
+          <h1>Mathematics</h1>
+          <p>Algebra · Geometry · Trigonometry · Calculus · Number Theory</p>
+        </div>
+      </div>
+
+      <!-- Tag Filter -->
+      <div class="tag-filter" role="search" aria-label="Filter posts by tag">
+        <label class="tag-filter__label" for="tag-search">Filter by tag:</label>
+        <div class="tag-filter__controls">
+          <input class="tag-filter__input" id="tag-search" type="search" placeholder="e.g. algebra, calculus…" aria-label="Search tags">
+          <div class="tag-filter__tags" aria-label="Available tags">
+            <button class="tag-filter__btn active" data-tag="">All</button>
+            <button class="tag-filter__btn" data-tag="algebra">algebra</button>
+            <button class="tag-filter__btn" data-tag="quadratics">quadratics</button>
+            <button class="tag-filter__btn" data-tag="factorising">factorising</button>
+            <button class="tag-filter__btn" data-tag="polynomials">polynomials</button>
+          </div>
+        </div>
+        <p class="tag-filter__count" aria-live="polite"></p>
+      </div>
+
+      <article class="post-card post-card--pinned" data-pinned="true">
+        <div class="post-card__content">
+          <div class="post-card__category">Mathematics · Reference</div>
+          <h3 class="post-card__title"><a href="posts/scratch-pad.html">Scratch Pad</a></h3>
+          <p class="post-card__excerpt">A personal reference of difficult maths problems encountered and how they were solved.</p>
+          <div class="post-card__meta">
+            <time class="post-date" datetime="2026-10-20">20 Oct 2026</time>
+            <span class="tag">reference</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="post-grid" id="post-grid">
+
+        <article class="post-card">
+          <div class="post-card__content">
+            <div class="post-card__category">Mathematics · Algebra</div>
+            <h3 class="post-card__title"><a href="posts/quadratic-equations.html">Quadratics 1: Expanding, Factorising, and Solving in Standard Form</a></h3>
+            <p class="post-card__excerpt">An introduction to quadratic equations — what standard form is, how to identify coefficients, and how to expand, factorise, and solve quadratics with worked examples throughout.</p>
+            <div class="post-card__meta">
+              <time class="post-date" datetime="2026-10-20">20 Oct 2026</time>
+              <span class="tag">algebra</span><span class="tag">quadratics</span><span class="tag">factorising</span><span class="tag">polynomials</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="../mainframe/index.html">Mainframe</a>
+        <a href="../computing/index.html">Computing &amp; Tech</a>
+        <a href="../mathematics/index.html">Mathematics</a>
+        <a href="../resources.html">Resources</a>
+        <a href="../history.html">Post History</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    (function () {
+      const grid = document.getElementById('post-grid');
+      const cards = Array.from(grid.querySelectorAll('article.post-card:not([data-pinned])'));
+      if (!cards.length) return; // no posts yet
+      const btnAll = document.querySelector('.tag-filter__btn[data-tag=""]');
+      const tagBtns = document.querySelectorAll('.tag-filter__btn[data-tag]');
+      const input = document.getElementById('tag-search');
+      const countEl = document.querySelector('.tag-filter__count');
+      let activeTag = '';
+
+      function getCardTags(card) {
+        return Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.trim().toLowerCase());
+      }
+
+      function applyFilter() {
+        const query = input.value.trim().toLowerCase();
+        let visible = 0;
+        cards.forEach(card => {
+          const tags = getCardTags(card);
+          const matchTag = !activeTag || tags.includes(activeTag);
+          const matchQuery = !query || tags.some(t => t.includes(query));
+          const show = matchTag && matchQuery;
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        countEl.textContent = visible === cards.length ? '' : visible + ' of ' + cards.length + ' posts shown';
+      }
+
+      tagBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeTag = btn.dataset.tag;
+          tagBtns.forEach(b => b.classList.toggle('active', b === btn));
+          input.value = '';
+          applyFilter();
+        });
+      });
+
+      input.addEventListener('input', () => {
+        activeTag = '';
+        tagBtns.forEach(b => b.classList.toggle('active', b === btnAll));
+        applyFilter();
+      });
+    })();
+  </script>
+</body>
+</html>

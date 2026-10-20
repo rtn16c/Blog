@@ -35,6 +35,7 @@
         <a href="index.html" class="active">Home</a>
         <a href="mainframe/index.html">Mainframe</a>
         <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="mathematics/index.html">Mathematics</a>
         <a href="resources.html">Resources</a>
         <a href="history.html">Post History</a>
         <a href="about.html">About</a>
@@ -50,7 +51,7 @@
       <section class="hero" aria-label="Welcome">
         <img src="images/sparkle-heart.png" alt="" class="hero__sparkle" width="56" height="56">
         <h1 class="hero__title">Return 16</h1>
-        <p class="hero__subtitle">// mainframes · computing · life in tech</p>
+        <p class="hero__subtitle">// mainframes · computing · mathematics · life in tech</p>
       </section>
 
       <!-- Category Cards -->
@@ -68,6 +69,12 @@
             <p class="category-card__desc">General computing, tech history, programming, women in STEM, and everything else in the wide world of technology.</p>
             <span class="category-card__count">coming soon</span>
           </a>
+          <a href="mathematics/index.html" class="category-card" aria-label="Browse Mathematics posts">
+            <div class="category-card__icon">📐</div>
+            <div class="category-card__name">Mathematics</div>
+            <p class="category-card__desc">Self-studying maths. Algebra, geometry, trigonometry, calculus, and everything in between. Starting from a 10th grade level.</p>
+            <span class="category-card__count">1 post</span>
+          </a>
         </div>
       </section>
 
@@ -78,8 +85,20 @@
 
           <article class="post-card">
             <div class="post-card__content">
+              <div class="post-card__category">Mathematics · Algebra</div>
+              <h3 class="post-card__title"><a href="mathematics/posts/quadratic-equations.html">Quadratics 1: Expanding, Factorising, and Solving in Standard Form</a></h3>
+              <p class="post-card__excerpt">An introduction to quadratic equations — what standard form is, how to identify coefficients, and how to expand, factorise, and solve quadratics with worked examples throughout.</p>
+              <div class="post-card__meta">
+                <time class="post-date" datetime="2026-10-20">20 Oct 2026</time>
+                <span class="tag">algebra</span><span class="tag">quadratics</span><span class="tag">factorising</span><span class="tag">polynomials</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="post-card">
+            <div class="post-card__content">
               <div class="post-card__category">Mainframe · SDSF</div>
-              <h3 class="post-card__title"><a href="posts/customizing-viewable-columns-in-sdsf-panels.html">Customizing viewable columns in SDSF panels</a></h3>
+              <h3 class="post-card__title"><a href="mainframe/posts/customizing-viewable-columns-in-sdsf-panels.html">Customizing viewable columns in SDSF panels</a></h3>
               <p class="post-card__excerpt">Did you know you can edit which fields are displayed in SDSF, their width, and the order they're displayed in by default? Learn how to find your group, locate the ISFPRMxx member, and define custom field layouts.</p>
               <div class="post-card__meta">
                 <time class="post-date" datetime="2026-07-07">07 Jul 2026</time>
@@ -91,7 +110,7 @@
           <article class="post-card">
             <div class="post-card__content">
               <div class="post-card__category">Mainframe · Breaking Things</div>
-              <h3 class="post-card__title"><a href="posts/i-cooked-a-sysres.html">I Cooked a SYSRES!</a></h3>
+              <h3 class="post-card__title"><a href="mainframe/posts/i-cooked-a-sysres.html">I Cooked a SYSRES!</a></h3>
               <p class="post-card__excerpt">It turns out SYS1.NUCLEUS can't have extents — something this baby mainframer learned the hard way. No production mainframes were hurt (much) in the making of this blog post.</p>
               <div class="post-card__meta">
                 <time class="post-date" datetime="2026-04-23">23 Apr 2026</time>
@@ -103,7 +122,7 @@
           <article class="post-card">
             <div class="post-card__content">
               <div class="post-card__category">Mainframe · RACF</div>
-              <h3 class="post-card__title"><a href="posts/adding-users-to-racf.html">Adding Users to RACF</a></h3>
+              <h3 class="post-card__title"><a href="mainframe/posts/adding-users-to-racf.html">Adding Users to RACF</a></h3>
               <p class="post-card__excerpt">A complete guide to creating RACF user IDs — from the minimum ADDUSER command through to TSO and OMVS segments, catalog aliases, dataset protection, and ZFS creation.</p>
               <div class="post-card__meta">
                 <time class="post-date" datetime="2026-03-20">20 Mar 2026</time>
@@ -115,7 +134,7 @@
           <article class="post-card">
             <div class="post-card__content">
               <div class="post-card__category">Mainframe · ISPF</div>
-              <h3 class="post-card__title"><a href="posts/jobcard-template-insert-macro.html">Jobcard Template Insert Macro</a></h3>
+              <h3 class="post-card__title"><a href="mainframe/posts/jobcard-template-insert-macro.html">Jobcard Template Insert Macro</a></h3>
               <p class="post-card__excerpt">A handy REXX ISPF edit macro that inserts a formatted job card template at your cursor position. Includes usage instructions and the full macro source.</p>
               <div class="post-card__meta">
                 <time class="post-date" datetime="2025-09-19">19 Sep 2025</time>
@@ -127,7 +146,7 @@
           <article class="post-card">
             <div class="post-card__content">
               <div class="post-card__category">Mainframe · JCL</div>
-              <h3 class="post-card__title"><a href="posts/whats-in-a-job-card.html">What's in a Job Card?</a></h3>
+              <h3 class="post-card__title"><a href="mainframe/posts/whats-in-a-job-card.html">What's in a Job Card?</a></h3>
               <p class="post-card__excerpt">JCL is a staple for Systems Programmers, and the job card is the most important part. A guide to positional and keyword parameters — CLASS, MSGCLASS, MSGLEVEL, NOTIFY, REGION, and TIME.</p>
               <div class="post-card__meta">
                 <time class="post-date" datetime="2025-09-15">15 Sep 2025</time>
@@ -156,6 +175,7 @@
         <a href="index.html">Home</a>
         <a href="mainframe/index.html">Mainframe</a>
         <a href="computing/index.html">Computing &amp; Tech</a>
+        <a href="mathematics/index.html">Mathematics</a>
         <a href="resources.html">Resources</a>
         <a href="history.html">Post History</a>
         <a href="about.html">About</a>

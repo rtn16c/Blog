@@ -328,6 +328,41 @@ a:hover { color: var(--text-link-hover); text-decoration: underline; }
   border-color: var(--border-strong);
 }
 
+.post-card--pinned {
+  background: var(--pink-light);
+  border-color: var(--pink-soft);
+  border-width: 2px;
+  padding-bottom: 1.75rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.post-card--pinned::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1.25rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--border-strong), transparent);
+}
+
+.post-card--pinned .post-card__category::before {
+  content: "📌 ";
+}
+
+.post-card--pinned .post-card__title a::after {
+  content: " — Pinned";
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pink-strong);
+  vertical-align: middle;
+}
+
 .post-card__content { min-width: 0; }
 
 .post-card__category {
