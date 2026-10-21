@@ -663,10 +663,13 @@ a:hover { color: var(--text-link-hover); text-decoration: underline; }
   padding: 0.6rem 1.25rem;
   background: var(--pink-strong);
   color: #fff;
+  border: none;
   border-radius: var(--radius-xl);
   font-size: 0.875rem;
   font-weight: 500;
+  font-family: var(--font-body);
   text-decoration: none;
+  cursor: pointer;
   transition: background 0.15s, transform 0.15s;
   margin-top: 0.5rem;
 }
@@ -676,6 +679,23 @@ a:hover { color: var(--text-link-hover); text-decoration: underline; }
   text-decoration: none;
   color: #fff;
   transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--secondary {
+  background: var(--pink-card);
+  color: var(--pink-deep);
+  border: 1.5px solid var(--border-strong);
+}
+
+.btn--secondary:hover {
+  background: var(--pink-light);
+  color: var(--pink-deep);
 }
 
 .resource-group { margin-bottom: 2rem; }
@@ -1407,4 +1427,141 @@ a:hover { color: var(--text-link-hover); text-decoration: underline; }
   .fc-btn--shuffle {
     margin-left: 0;
   }
+}
+
+/* ===========================
+   Tools Promo Row (maths index)
+   =========================== */
+
+.tools-promo-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (max-width: 640px) {
+  .tools-promo-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Clickable tool tiles */
+.tool-tile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--pink-card);
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  text-align: left;
+  color: var(--text-secondary);
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+
+.tool-tile:hover {
+  border-color: var(--pink-mid);
+  background: var(--pink-light);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: var(--pink-deep);
+}
+
+.tool-tile__icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pink-light);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--pink-strong);
+  flex-shrink: 0;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.tool-tile:hover .tool-tile__icon {
+  background: var(--pink-pale);
+  border-color: var(--pink-mid);
+}
+
+.tool-tile__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.tool-tile__desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ===========================
+   Math Toys Hub
+   =========================== */
+
+.toys-page-header {
+  margin-bottom: 1.5rem;
+}
+
+.toys-page-header h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  font-family: var(--font-pixel);
+  color: var(--pink-deep);
+  margin: 0.5rem 0 0.4rem;
+}
+
+.toys-page-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.toys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.toy-card {
+  background: var(--pink-card);
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  padding: 1.4rem 1.25rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.toy-card:hover {
+  border-color: var(--pink-mid);
+  box-shadow: var(--shadow-sm);
+}
+
+.toy-card__icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.toy-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.toy-card__desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.toy-card .btn {
+  align-self: flex-start;
+  margin-top: 0.4rem;
 }

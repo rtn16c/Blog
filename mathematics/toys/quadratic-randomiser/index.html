@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quadratic Randomiser — Return 16</title>
+  <meta name="description" content="Generate random quadratic equations in standard form to practise solving. Three difficulty levels: easy, medium, and hard.">
+  <link rel="icon" href="../../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    /* ── Layout ── */
+    .qr-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── Page header ── */
+    .qr-header {
+      margin-bottom: 1.75rem;
+    }
+
+    .qr-header h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      font-family: var(--font-pixel);
+      color: var(--pink-deep);
+      margin: 0.5rem 0 0.4rem;
+    }
+
+    .qr-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── Controls bar ── */
+    .qr-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .qr-controls__label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .qr-difficulty-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .qr-diff-btn {
+      padding: 0.35rem 0.9rem;
+      border-radius: 99px;
+      border: 1.5px solid var(--border-strong);
+      background: var(--pink-card);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      font-family: var(--font-body);
+    }
+
+    .qr-diff-btn:hover {
+      border-color: var(--pink-mid);
+      color: var(--pink-deep);
+    }
+
+    .qr-diff-btn.active {
+      background: var(--pink-mid);
+      border-color: var(--pink-mid);
+      color: #fff;
+    }
+
+    /* ── Display card ── */
+    .qr-card {
+      background: var(--pink-card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+    }
+
+    .qr-equation {
+      font-size: 2.2rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--pink-deep);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .qr-equation--idle {
+      font-size: 1rem;
+      font-family: var(--font-pixel);
+      font-weight: 400;
+      letter-spacing: 0;
+      color: var(--text-muted);
+    }
+
+    .qr-equation sup {
+      font-size: 0.65em;
+      vertical-align: super;
+    }
+
+    .qr-coefficients {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .qr-coefficients span {
+      background: var(--pink-light);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 0.2rem 0.65rem;
+    }
+
+    .qr-coefficients[hidden] { display: none; }
+
+    .qr-difficulty-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .qr-difficulty-label[hidden] { display: none; }
+
+    .qr-prompt {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ── Action buttons ── */
+    .qr-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .qr-actions .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* ── Toggle row ── */
+    .qr-toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .qr-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .qr-toggle input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--pink-strong);
+      cursor: pointer;
+    }
+
+    /* ── Copy toast ── */
+    .qr-toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(0.5rem);
+      background: var(--pink-deep);
+      color: #fff;
+      font-size: 0.875rem;
+      padding: 0.5rem 1.25rem;
+      border-radius: 99px;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .qr-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Random label badge ── */
+    .qr-random-badge {
+      font-size: 0.75rem;
+      background: var(--lavender);
+      color: var(--lavender-deep);
+      border-radius: 99px;
+      padding: 0.15rem 0.6rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .qr-equation { font-size: 1.6rem; }
+      .qr-card { padding: 1.75rem 1.25rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../mainframe/index.html">Mainframe</a>
+        <a href="../../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../../mathematics/index.html" class="active">Mathematics</a>
+        <a href="../../../resources.html">Resources</a>
+        <a href="../../../history.html">Post History</a>
+        <a href="../../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper">
+      <div class="qr-wrapper">
+
+        <div class="qr-header">
+          <a href="../index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Math Toys
+          </a>
+          <h1>Quadratic Randomiser</h1>
+          <p>Generate a quadratic equation in standard form <em>ax² + bx + c = 0</em> to practise solving.</p>
+        </div>
+
+        <!-- Difficulty controls -->
+        <div class="qr-controls">
+          <span class="qr-controls__label">Difficulty:</span>
+          <div class="qr-difficulty-group" role="group" aria-label="Difficulty level">
+            <button class="qr-diff-btn active" data-diff="easy">Easy</button>
+            <button class="qr-diff-btn" data-diff="medium">Medium</button>
+            <button class="qr-diff-btn" data-diff="hard">Hard</button>
+            <button class="qr-diff-btn" data-diff="random">Random</button>
+          </div>
+        </div>
+
+        <!-- Prompt -->
+        <p class="qr-prompt">Factorise, complete the square, or use the quadratic formula to solve for <em>x</em>.</p>
+
+        <!-- Equation display -->
+        <div class="qr-card" id="qr-card" aria-live="polite" aria-atomic="true">
+          <div class="qr-difficulty-label" id="qr-diff-display" hidden></div>
+          <div class="qr-equation qr-equation--idle" id="qr-equation">Press New Question to start</div>
+          <div class="qr-coefficients" id="qr-coefficients" hidden>
+            <span id="coeff-a">a = —</span>
+            <span id="coeff-b">b = —</span>
+            <span id="coeff-c">c = —</span>
+          </div>
+        </div>
+
+        <!-- Toggles -->
+        <div class="qr-toggles">
+          <label class="qr-toggle">
+            <input type="checkbox" id="show-coefficients">
+            Show a, b, c values
+          </label>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="qr-actions">
+          <button class="btn" id="btn-new" onclick="newQuestion()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.46"/></svg>
+            New Question
+          </button>
+          <button class="btn btn--secondary" id="btn-copy" onclick="copyQuestion()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Question
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="qr-toast" id="qr-toast" role="status" aria-live="polite">Copied to clipboard!</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../mainframe/index.html">Mainframe</a>
+        <a href="../../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../../mathematics/index.html">Mathematics</a>
+        <a href="../../../resources.html">Resources</a>
+        <a href="../../../history.html">Post History</a>
+        <a href="../../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    /* ── Nav toggle ── */
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    /* ─────────────────────────────────────────────
+       Coefficient ranges per difficulty
+       Adjust these constants to tune each level.
+    ───────────────────────────────────────────── */
+    const RANGES = {
+      easy:   { aMin: 1, aMax: 3, rootMin: -6, rootMax: 6 },   // integer roots guaranteed
+      medium: { aMin: 1, aMax: 4, bMin: -10, bMax: 10,         // irrational roots (non-perfect discriminant)
+                cMin: -12, cMax: 12 },
+      hard:   { aMin: 1, aMax: 6, bMin: -15, bMax: 15,         // mix: repeated roots, negative discriminant
+                cMin: -20, cMax: 20 }
+    };
+
+    /* ── State ── */
+    let currentDiff = 'easy';
+    let currentEquation = null;   // { a, b, c, plainText }
+    const history = new Set();    // plaintext history to avoid repeats
+
+    /* ── Utility helpers ── */
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randIntNonZero(min, max) {
+      let v;
+      do { v = randInt(min, max); } while (v === 0);
+      return v;
+    }
+
+    /* ── Equation generators ── */
+
+    /**
+     * Easy: build from two integer roots p and q.
+     * Expands a(x - p)(x - q) = ax² - a(p+q)x + a(p*q).
+     */
+    function generateEasy() {
+      const r = RANGES.easy;
+      let a, p, q;
+      let attempts = 0;
+      do {
+        a = randIntNonZero(r.aMin, r.aMax);
+        p = randInt(r.rootMin, r.rootMax);
+        q = randInt(r.rootMin, r.rootMax);
+        attempts++;
+        // Reject trivially boring equations like x² = 0
+      } while (p === 0 && q === 0 && attempts < 40);
+      const b = -a * (p + q);
+      const c = a * p * q;
+      return { a, b, c };
+    }
+
+    /**
+     * Medium: coefficients chosen so the discriminant (b²-4ac) is positive
+     * but not a perfect square → irrational roots, good for quadratic formula practice.
+     */
+    function generateMedium() {
+      const r = RANGES.medium;
+      let a, b, c, disc;
+      let attempts = 0;
+      do {
+        a = randIntNonZero(r.aMin, r.aMax);
+        b = randInt(r.bMin, r.bMax);
+        c = randIntNonZero(r.cMin, r.cMax);
+        disc = b * b - 4 * a * c;
+        attempts++;
+      } while ((disc <= 0 || isPerfectSquare(disc)) && attempts < 200);
+      // Fallback: if we somehow couldn't satisfy within attempts, just return last attempt
+      return { a, b, c };
+    }
+
+    /**
+     * Hard: larger coefficients with deliberate mix —
+     *   ~1/3 repeated root (disc = 0), ~1/3 negative discriminant, ~1/3 two irrational roots.
+     */
+    function generateHard() {
+      const r = RANGES.hard;
+      const roll = Math.random();
+      let a, b, c;
+
+      if (roll < 0.33) {
+        // Repeated root: build a(x - p)² so disc = 0
+        a = randIntNonZero(r.aMin, r.aMax);
+        const p = randIntNonZero(-5, 5);
+        b = -2 * a * p;
+        c = a * p * p;
+      } else if (roll < 0.66) {
+        // Negative discriminant: ensure b²-4ac < 0
+        let disc, attempts = 0;
+        do {
+          a = randIntNonZero(r.aMin, r.aMax);
+          b = randInt(r.bMin, r.bMax);
+          c = randIntNonZero(1, r.cMax);   // c > 0 makes negative disc more likely
+          disc = b * b - 4 * a * c;
+          attempts++;
+        } while (disc >= 0 && attempts < 200);
+      } else {
+        // Two real irrational roots with bigger coefficients
+        let disc, attempts = 0;
+        do {
+          a = randIntNonZero(r.aMin, r.aMax);
+          b = randInt(r.bMin, r.bMax);
+          c = randInt(r.cMin, r.cMax === 0 ? 1 : r.cMax);
+          disc = b * b - 4 * a * c;
+          attempts++;
+        } while ((disc <= 0 || isPerfectSquare(disc)) && attempts < 200);
+      }
+      return { a, b, c };
+    }
+
+    /** Returns true if n is a perfect square (n ≥ 0). */
+    function isPerfectSquare(n) {
+      if (n < 0) return false;
+      const s = Math.round(Math.sqrt(n));
+      return s * s === n;
+    }
+
+    /* ── Equation formatting ── */
+
+    /**
+     * Formats the quadratic as an HTML string, e.g. "3x² − 5x + 2 = 0".
+     * Handles signs correctly so we never show "+ -5x".
+     */
+    function formatEquationHTML(a, b, c) {
+      const parts = [];
+
+      // a term (ax²)
+      if (a === 1)       parts.push('x<sup>2</sup>');
+      else if (a === -1) parts.push('−x<sup>2</sup>');
+      else               parts.push(a + 'x<sup>2</sup>');
+
+      // b term (bx)
+      if (b !== 0) {
+        if (b === 1)       parts.push('+ x');
+        else if (b === -1) parts.push('− x');
+        else if (b > 0)    parts.push('+ ' + b + 'x');
+        else               parts.push('− ' + Math.abs(b) + 'x');
+      }
+
+      // c term
+      if (c !== 0) {
+        if (c > 0) parts.push('+ ' + c);
+        else       parts.push('− ' + Math.abs(c));
+      }
+
+      return parts.join(' ') + ' = 0';
+    }
+
+    /**
+     * Plain-text version for clipboard, using ^ for superscript.
+     */
+    function formatEquationText(a, b, c) {
+      const parts = [];
+
+      if (a === 1)       parts.push('x^2');
+      else if (a === -1) parts.push('-x^2');
+      else               parts.push(a + 'x^2');
+
+      if (b !== 0) {
+        if (b === 1)       parts.push('+ x');
+        else if (b === -1) parts.push('- x');
+        else if (b > 0)    parts.push('+ ' + b + 'x');
+        else               parts.push('- ' + Math.abs(b) + 'x');
+      }
+
+      if (c !== 0) {
+        if (c > 0) parts.push('+ ' + c);
+        else       parts.push('- ' + Math.abs(c));
+      }
+
+      return parts.join(' ') + ' = 0';
+    }
+
+    /* ── Core: generate & display ── */
+    function newQuestion() {
+      const diff = currentDiff;
+      let eq;
+      let key;
+      let attempts = 0;
+
+      // Avoid repeating an equation seen this session (try up to 30 times)
+      do {
+        if (diff === 'easy')        eq = generateEasy();
+        else if (diff === 'medium') eq = generateMedium();
+        else if (diff === 'hard')   eq = generateHard();
+        else {
+          // Random: pick any generator at random
+          const gens = [generateEasy, generateMedium, generateHard];
+          eq = gens[Math.floor(Math.random() * gens.length)]();
+        }
+        key = `${eq.a},${eq.b},${eq.c}`;
+        attempts++;
+      } while (history.has(key) && attempts < 30);
+
+      history.add(key);
+      // Keep history bounded to avoid memory growth in long sessions
+      if (history.size > 500) history.clear();
+
+      currentEquation = { ...eq, plainText: formatEquationText(eq.a, eq.b, eq.c) };
+
+      // Update DOM
+      const eqEl = document.getElementById('qr-equation');
+      eqEl.innerHTML = formatEquationHTML(eq.a, eq.b, eq.c);
+      eqEl.classList.remove('qr-equation--idle');
+      document.getElementById('coeff-a').textContent = 'a = ' + eq.a;
+      document.getElementById('coeff-b').textContent = 'b = ' + eq.b;
+      document.getElementById('coeff-c').textContent = 'c = ' + eq.c;
+
+      // Show difficulty label now that a question exists
+      const diffLabel = document.getElementById('qr-diff-display');
+      const labelMap = { easy: 'Easy', medium: 'Medium', hard: 'Hard', random: 'Random' };
+      diffLabel.textContent = labelMap[diff] || diff;
+      diffLabel.hidden = false;
+
+      document.getElementById('btn-copy').disabled = false;
+
+      // Sync coefficient visibility
+      syncCoefficients();
+    }
+
+    function syncCoefficients() {
+      const show = document.getElementById('show-coefficients').checked;
+      const el = document.getElementById('qr-coefficients');
+      el.hidden = !(show && currentEquation);
+    }
+
+    /* ── Copy to clipboard ── */
+    function copyQuestion() {
+      if (!currentEquation) return;
+      const text = currentEquation.plainText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied: ' + text);
+      }).catch(() => {
+        // Fallback for browsers that block clipboard
+        showToast('Could not copy — try manually selecting the equation.');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('qr-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    /* ── Difficulty buttons ── */
+    document.querySelectorAll('.qr-diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentDiff = btn.dataset.diff;
+        document.querySelectorAll('.qr-diff-btn').forEach(b => b.classList.toggle('active', b === btn));
+      });
+    });
+
+    /* ── Coefficient toggle ── */
+    document.getElementById('show-coefficients').addEventListener('change', syncCoefficients);
+  </script>
+</body>
+</html>
