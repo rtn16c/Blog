@@ -540,10 +540,13 @@
 
         <!-- Validation messages -->
         <div class="vp-messages" id="vp-messages" aria-live="polite">
+          <div class="vp-msg vp-msg--error" id="msg-invalid">Please fill in all fields with valid positive numbers.</div>
           <div class="vp-msg vp-msg--error" id="msg-overlap">VTOC and index extents overlap — they must not share any tracks.</div>
           <div class="vp-msg vp-msg--error" id="msg-vtoc-overflow">VTOC extends beyond the end of the volume.</div>
           <div class="vp-msg vp-msg--error" id="msg-idx-overflow">Index extends beyond the end of the volume.</div>
-          <div class="vp-msg vp-msg--error" id="msg-vtoc-64k">VTOC crosses the 64,520-track architectural limit — this will cause system failures.</div>
+          <div class="vp-msg vp-msg--error" id="msg-vtoc-64k">VTOC crosses the 64,520-track architectural limit — this will cause system failures on any volume.</div>
+          <div class="vp-msg vp-msg--error" id="msg-idx-cyllimit">Index end exceeds the 65,520-cylinder architectural limit for VTOCIX placement (ICKDSF restriction).</div>
+          <div class="vp-msg vp-msg--error" id="msg-idx-spanlimit">Index span exceeds 65,534 tracks — the maximum size permitted for a VTOC Index dataset.</div>
           <div class="vp-msg vp-msg--warn"  id="msg-vtoc-notfront">VTOC does not start in the recommended front-of-volume region (within the first 2 cylinders / track 30).</div>
           <div class="vp-msg vp-msg--warn"  id="msg-idx-gap">Index does not immediately follow the VTOC. IBM recommends placing them side-by-side.</div>
           <div class="vp-msg vp-msg--ok"    id="msg-ok">Layout looks good.</div>
@@ -659,7 +662,9 @@
       const BYTES_PER_TRACK  = 56664;
       const BYTES_PER_MB     = 1024 * 1024;
       const BYTES_PER_GB     = 1024 * 1024 * 1024;
-      const VTOC_64K_LIMIT   = 64520;   // VTOC must end before track 64,520
+      const VTOC_64K_LIMIT   = 64520;         // VTOC must end at or before track 64,520
+      const IDX_CYL_LIMIT    = 65520 * 15;    // Index end must not exceed cyl 65,520 (= track 983,800)
+      const IDX_MAX_SPAN     = 65534;         // Index dataset cannot exceed 64K-1 tracks in size
 
       const MODELS = {
         '3':  { name: '3390-3',  cyls: 3339  },
@@ -696,10 +701,13 @@
       const legend64k   = document.getElementById('legend-64k-item');
 
       const msgs = {
+        invalid:      document.getElementById('msg-invalid'),
         overlap:      document.getElementById('msg-overlap'),
         vtocOverflow: document.getElementById('msg-vtoc-overflow'),
         idxOverflow:  document.getElementById('msg-idx-overflow'),
         vtoc64k:      document.getElementById('msg-vtoc-64k'),
+        idxCylLimit:  document.getElementById('msg-idx-cyllimit'),
+        idxSpanLimit: document.getElementById('msg-idx-spanlimit'),
         vtocNotFront: document.getElementById('msg-vtoc-notfront'),
         idxGap:       document.getElementById('msg-idx-gap'),
         ok:           document.getElementById('msg-ok'),
@@ -801,13 +809,13 @@
         const idxStart  = parseInt(fIdxStart.value,  10);
         const idxSpan   = parseInt(fIdxSpan.value,   10);
 
-        // Validate inputs
+        // Validate: all fields must be non-negative integers, spans ≥ 1
+        Object.values(msgs).forEach(m => m.classList.remove('show'));
         if ([vtocStart, vtocSpan, idxStart, idxSpan].some(v => isNaN(v) || v < 0)
             || vtocSpan < 1 || idxSpan < 1) {
-          Object.values(msgs).forEach(m => m.classList.remove('show'));
-          msgs.ok.textContent = 'Please fill in all fields with valid positive numbers.';
-          msgs.ok.classList.add('show');
-          msgs.ok.className = 'vp-msg vp-msg--error show';
+          msgs.invalid.classList.add('show');
+          barVtoc.style.display  = 'none';
+          barIndex.style.display = 'none';
           return;
         }
 
@@ -815,19 +823,23 @@
         const idxEnd  = idxStart  + idxSpan;
 
         /* ---- Checks ---- */
-        const overlap      = vtocStart < idxEnd && idxStart < vtocEnd;
-        const vtocOverflow = vtocEnd > tot;
-        const idxOverflow  = idxEnd  > tot;
-        const vtoc64k      = vtocEnd > VTOC_64K_LIMIT;
-        const vtocNotFront = vtocStart > 30;                         // beyond Cyl 2, Head 0
-        const idxGap       = idxStart !== vtocEnd;                   // not immediately adjacent
+        const overlap        = vtocStart < idxEnd && idxStart < vtocEnd;
+        const vtocOverflow   = vtocEnd > tot;
+        const idxOverflow    = idxEnd  > tot;
+        const vtoc64k        = vtocEnd > VTOC_64K_LIMIT;
+        const idxCylLimit    = idxEnd  > IDX_CYL_LIMIT;
+        const idxSpanLimit   = idxSpan > IDX_MAX_SPAN;
+        const vtocNotFront   = vtocStart > 30;   // beyond Cyl 2, Head 0
+        const idxGap         = idxStart !== vtocEnd;
 
-        const hasError = overlap || vtocOverflow || idxOverflow || vtoc64k;
+        const hasError = overlap || vtocOverflow || idxOverflow || vtoc64k || idxCylLimit || idxSpanLimit;
 
         msgs.overlap.classList.toggle('show',      overlap);
         msgs.vtocOverflow.classList.toggle('show',  vtocOverflow);
         msgs.idxOverflow.classList.toggle('show',   idxOverflow);
         msgs.vtoc64k.classList.toggle('show',       vtoc64k);
+        msgs.idxCylLimit.classList.toggle('show',   idxCylLimit);
+        msgs.idxSpanLimit.classList.toggle('show',  idxSpanLimit);
         msgs.vtocNotFront.classList.toggle('show',  !hasError && vtocNotFront);
         msgs.idxGap.classList.toggle('show',        !hasError && idxGap);
         msgs.ok.classList.toggle('show',            !hasError && !vtocNotFront && !idxGap);
@@ -836,9 +848,9 @@
           msgs.ok.className = 'vp-msg vp-msg--ok show';
         }
 
-        /* ---- Bar ---- */
-        barVtoc.style.display  = '';
-        barIndex.style.display = '';
+        /* ---- Bar — only render segments that fit within the volume ---- */
+        barVtoc.style.display  = vtocOverflow ? 'none' : '';
+        barIndex.style.display = idxOverflow  ? 'none' : '';
 
         const vtocL = (vtocStart / tot * 100).toFixed(3) + '%';
         const vtocW = Math.max(vtocSpan / tot * 100, 0.3).toFixed(3) + '%';
