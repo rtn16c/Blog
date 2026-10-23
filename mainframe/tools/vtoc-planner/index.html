@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VTOC Planner — Mainframe Tools — Return 16</title>
+  <meta name="description" content="Plan VTOC and VTOC Index placement on IBM 3390 DASD volumes. Visualise extents, check the 64K track limit, and see eligible user space.">
+  <link rel="icon" href="../../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    /* ===========================
+       VTOC Planner
+       =========================== */
+
+    /* Model selector pills */
+    .vp-model-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .vp-model-btn {
+      padding: 0.4rem 1rem;
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-xl);
+      background: var(--pink-card);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .vp-model-btn:hover {
+      background: var(--pink-light);
+      border-color: var(--pink-soft);
+    }
+
+    .vp-model-btn.active {
+      background: var(--pink-strong);
+      border-color: var(--pink-strong);
+      color: #fff;
+    }
+
+    /* Volume summary strip */
+    .vp-volume-strip {
+      background: var(--pink-light);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .vp-volume-strip span { white-space: nowrap; }
+    .vp-volume-strip strong { color: var(--text-primary); }
+
+    /* Input grid */
+    .vp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 600px) {
+      .vp-grid { grid-template-columns: 1fr; gap: 1rem; }
+    }
+
+    .vp-section {
+      display: contents;
+    }
+
+    .vp-section-heading {
+      grid-column: 1 / -1;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: -0.5rem;
+    }
+
+    .vp-divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: var(--border-light);
+      margin: 0.25rem 0;
+    }
+
+    .vp-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .vp-field__label {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--pink-strong);
+    }
+
+    .vp-field__hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-left: 0.3rem;
+    }
+
+    .vp-field__input {
+      padding: 0.5rem 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      background: var(--pink-bg);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+      width: 100%;
+    }
+
+    .vp-field__input:focus {
+      border-color: var(--pink-strong);
+      background: #fff;
+    }
+
+    /* Computed size badge next to input */
+    .vp-field__computed {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      min-height: 1.1em;
+    }
+
+    /* Actions */
+    .vp-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Validation messages */
+    .vp-messages {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      min-height: 1.4em;
+    }
+
+    .vp-msg {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-sm);
+      display: none;
+    }
+
+    .vp-msg.show { display: block; }
+
+    .vp-msg--error {
+      background: #fff0f0;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+    }
+
+    .vp-msg--warn {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .vp-msg--ok {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
+    /* ===========================
+       Volume Map Bar
+       =========================== */
+    .vp-map-section {
+      margin-top: 1.75rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .vp-map-section__title {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    /* The bar itself */
+    .vp-bar-wrap {
+      position: relative;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      overflow: visible;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Base green layer — always 100% wide */
+    .vp-bar-total {
+      position: absolute;
+      inset: 0;
+      background: #bbf7d0;
+      border: 1.5px solid #86efac;
+      border-radius: var(--radius-sm);
+    }
+
+    /* VTOC segment — pastel blue */
+    .vp-bar-vtoc {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: #bfdbfe;
+      border: 1.5px solid #93c5fd;
+      border-radius: 3px;
+      transition: left 0.25s, width 0.25s;
+      min-width: 2px;
+    }
+
+    /* Index segment — pastel purple */
+    .vp-bar-index {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: #e9d5ff;
+      border: 1.5px solid #c4b5fd;
+      border-radius: 3px;
+      transition: left 0.25s, width 0.25s;
+      min-width: 2px;
+    }
+
+    /* 64K track limit marker */
+    .vp-bar-64k {
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      width: 2px;
+      background: #f97316;
+      border-radius: 1px;
+      transition: left 0.25s;
+    }
+
+    .vp-bar-64k::after {
+      content: '64K';
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      font-family: var(--font-mono);
+      color: #f97316;
+      white-space: nowrap;
+    }
+
+    /* Bar scale labels */
+    .vp-bar-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    /* Legend */
+    .vp-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .vp-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.775rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    .vp-legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .vp-legend-swatch--total { background: #bbf7d0; border: 1.5px solid #86efac; }
+    .vp-legend-swatch--vtoc  { background: #bfdbfe; border: 1.5px solid #93c5fd; }
+    .vp-legend-swatch--index { background: #e9d5ff; border: 1.5px solid #c4b5fd; }
+
+    /* ===========================
+       Results summary
+       =========================== */
+    .vp-results {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-light);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 0.75rem 1.5rem;
+    }
+
+    .vp-result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .vp-result-item__label {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .vp-result-item__value {
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .vp-result-item__value.dim { color: var(--text-muted); font-weight: 400; }
+
+    /* Card wrapper (same pattern as 3390-space) */
+    /* ===========================
+       Dataset estimates
+       =========================== */
+    .vp-estimates {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .vp-estimates__heading {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .vp-estimates__note {
+      font-size: 0.775rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .vp-estimates__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 0.75rem 1.5rem;
+    }
+
+    .vp-est-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .vp-est-item__label {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .vp-est-item__value {
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .vp-est-item__value.dim { color: var(--text-muted); font-weight: 400; }
+
+    .vp-est-item__sub {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      min-height: 1em;
+    }
+
+    .vp-est-item__sub.warn { color: #92400e; }
+    .vp-est-item__sub.ok   { color: #166534; }
+
+    .dasd-calc {
+      background: var(--pink-card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1.75rem 1.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .dasd-calc__title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../../mathematics/index.html">Mathematics</a>
+        <a href="../../../resources.html">Resources</a>
+        <a href="../../../history.html">Post History</a>
+        <a href="../../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <div class="toys-page-header">
+        <a href="../index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Mainframe Tools
+        </a>
+        <h1>VTOC Planner</h1>
+      </div>
+
+      <div class="dasd-calc">
+        <div class="dasd-calc__title">Select a model and enter VTOC/Index positions</div>
+
+        <!-- Model selector -->
+        <div class="vp-model-row" role="group" aria-label="Select 3390 model">
+          <button class="vp-model-btn active" data-model="3"  type="button">Mod 3</button>
+          <button class="vp-model-btn"        data-model="9"  type="button">Mod 9</button>
+          <button class="vp-model-btn"        data-model="27" type="button">Mod 27</button>
+          <button class="vp-model-btn"        data-model="54" type="button">Mod 54</button>
+        </div>
+
+        <!-- Volume summary -->
+        <div class="vp-volume-strip" id="vp-strip">
+          <span>Model: <strong id="vs-model">3390-3</strong></span>
+          <span>Cylinders: <strong id="vs-cyls">3,339</strong></span>
+          <span>Tracks: <strong id="vs-tracks">50,085</strong></span>
+          <span>Capacity: <strong id="vs-gb">2.63 GB</strong></span>
+        </div>
+
+        <!-- Inputs -->
+        <div class="vp-grid">
+
+          <div class="vp-section-heading">VTOC</div>
+
+          <div class="vp-field">
+            <label class="vp-field__label" for="f-vtoc-start">
+              Start track<span class="vp-field__hint">(absolute, 0-based)</span>
+            </label>
+            <input class="vp-field__input" id="f-vtoc-start" type="number" min="0" step="1" value="15" autocomplete="off">
+            <div class="vp-field__computed" id="vtoc-start-loc"></div>
+          </div>
+
+          <div class="vp-field">
+            <label class="vp-field__label" for="f-vtoc-span">
+              Span<span class="vp-field__hint">(tracks)</span>
+            </label>
+            <input class="vp-field__input" id="f-vtoc-span" type="number" min="1" step="1" value="90" autocomplete="off">
+            <div class="vp-field__computed" id="vtoc-span-size"></div>
+          </div>
+
+          <div class="vp-divider"></div>
+          <div class="vp-section-heading">VTOC Index (SYS1.VTOCIX)</div>
+
+          <div class="vp-field">
+            <label class="vp-field__label" for="f-idx-start">
+              Start track<span class="vp-field__hint">(absolute, 0-based)</span>
+            </label>
+            <input class="vp-field__input" id="f-idx-start" type="number" min="0" step="1" value="105" autocomplete="off">
+            <div class="vp-field__computed" id="idx-start-loc"></div>
+          </div>
+
+          <div class="vp-field">
+            <label class="vp-field__label" for="f-idx-span">
+              Span<span class="vp-field__hint">(tracks)</span>
+            </label>
+            <input class="vp-field__input" id="f-idx-span" type="number" min="1" step="1" value="45" autocomplete="off">
+            <div class="vp-field__computed" id="idx-span-size"></div>
+          </div>
+
+        </div>
+
+        <div class="vp-actions">
+          <button class="btn" id="btn-calc" type="button">Calculate</button>
+          <button class="btn btn--secondary" id="btn-reset" type="button">Reset</button>
+        </div>
+
+        <!-- Validation messages -->
+        <div class="vp-messages" id="vp-messages" aria-live="polite">
+          <div class="vp-msg vp-msg--error" id="msg-overlap">VTOC and index extents overlap — they must not share any tracks.</div>
+          <div class="vp-msg vp-msg--error" id="msg-vtoc-overflow">VTOC extends beyond the end of the volume.</div>
+          <div class="vp-msg vp-msg--error" id="msg-idx-overflow">Index extends beyond the end of the volume.</div>
+          <div class="vp-msg vp-msg--error" id="msg-vtoc-64k">VTOC crosses the 64,520-track architectural limit — this will cause system failures.</div>
+          <div class="vp-msg vp-msg--warn"  id="msg-vtoc-notfront">VTOC does not start in the recommended front-of-volume region (within the first 2 cylinders / track 30).</div>
+          <div class="vp-msg vp-msg--warn"  id="msg-idx-gap">Index does not immediately follow the VTOC. IBM recommends placing them side-by-side.</div>
+          <div class="vp-msg vp-msg--ok"    id="msg-ok">Layout looks good.</div>
+        </div>
+
+        <!-- Volume map -->
+        <div class="vp-map-section">
+          <div class="vp-map-section__title">Volume map</div>
+
+          <div class="vp-bar-wrap" id="vp-bar-wrap" role="img" aria-label="Volume space diagram">
+            <div class="vp-bar-total"></div>
+            <div class="vp-bar-64k"  id="bar-64k"  style="display:none"></div>
+            <div class="vp-bar-vtoc" id="bar-vtoc" style="display:none"></div>
+            <div class="vp-bar-index" id="bar-index" style="display:none"></div>
+          </div>
+
+          <div class="vp-bar-scale">
+            <span>Track 0</span>
+            <span id="bar-scale-mid"></span>
+            <span id="bar-scale-end"></span>
+          </div>
+
+          <div class="vp-legend">
+            <div class="vp-legend-item"><div class="vp-legend-swatch vp-legend-swatch--total"></div>Total volume</div>
+            <div class="vp-legend-item"><div class="vp-legend-swatch vp-legend-swatch--vtoc"></div>VTOC</div>
+            <div class="vp-legend-item"><div class="vp-legend-swatch vp-legend-swatch--index"></div>VTOC Index</div>
+            <div class="vp-legend-item" id="legend-64k-item" style="display:none">
+              <div style="width:14px;height:14px;background:#f97316;border-radius:3px;flex-shrink:0"></div>64K track limit
+            </div>
+          </div>
+        </div>
+
+        <!-- Results summary -->
+        <div class="vp-results" id="vp-results">
+          <div class="vp-result-item">
+            <div class="vp-result-item__label">VTOC extent</div>
+            <div class="vp-result-item__value dim" id="res-vtoc-extent">—</div>
+          </div>
+          <div class="vp-result-item">
+            <div class="vp-result-item__label">VTOC size</div>
+            <div class="vp-result-item__value dim" id="res-vtoc-size">—</div>
+          </div>
+          <div class="vp-result-item">
+            <div class="vp-result-item__label">Index extent</div>
+            <div class="vp-result-item__value dim" id="res-idx-extent">—</div>
+          </div>
+          <div class="vp-result-item">
+            <div class="vp-result-item__label">Index size</div>
+            <div class="vp-result-item__value dim" id="res-idx-size">—</div>
+          </div>
+          <div class="vp-result-item">
+            <div class="vp-result-item__label">System tracks used</div>
+            <div class="vp-result-item__value dim" id="res-sys-tracks">—</div>
+          </div>
+          <div class="vp-result-item">
+            <div class="vp-result-item__label">Eligible user space</div>
+            <div class="vp-result-item__value dim" id="res-user-space">—</div>
+          </div>
+        </div>
+
+        <!-- Dataset estimates -->
+        <div class="vp-estimates" id="vp-estimates">
+          <div class="vp-estimates__heading">Dataset capacity estimates</div>
+          <div class="vp-estimates__note">The VTOC holds ~44 entries per track (140-byte DSCBs). Space figures assume datasets average the listed size. Estimates are approximate.</div>
+          <div class="vp-estimates__grid">
+            <div class="vp-est-item">
+              <div class="vp-est-item__label">Max datasets (VTOC limit)</div>
+              <div class="vp-est-item__value dim" id="est-vtoc-max">—</div>
+              <div class="vp-est-item__sub" id="est-vtoc-index">—</div>
+            </div>
+            <div class="vp-est-item">
+              <div class="vp-est-item__label">If avg dataset = 1 cylinder</div>
+              <div class="vp-est-item__value dim" id="est-ds-1cyl">—</div>
+            </div>
+            <div class="vp-est-item">
+              <div class="vp-est-item__label">If avg dataset = 50 cylinders</div>
+              <div class="vp-est-item__value dim" id="est-ds-50cyl">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dasd-calc -->
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../mainframe/index.html">Mainframe</a>
+        <a href="../../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../../mathematics/index.html">Mathematics</a>
+        <a href="../../../resources.html">Resources</a>
+        <a href="../../../history.html">Post History</a>
+        <a href="../../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    (function () {
+      /* ---- Constants ---- */
+      const TRACKS_PER_CYL   = 15;
+      const BYTES_PER_TRACK  = 56664;
+      const BYTES_PER_MB     = 1024 * 1024;
+      const BYTES_PER_GB     = 1024 * 1024 * 1024;
+      const VTOC_64K_LIMIT   = 64520;   // VTOC must end before track 64,520
+
+      const MODELS = {
+        '3':  { name: '3390-3',  cyls: 3339  },
+        '9':  { name: '3390-9',  cyls: 10017 },
+        '27': { name: '3390-27', cyls: 32760 },
+        '54': { name: '3390-54', cyls: 65520 },
+      };
+
+      /* ---- State ---- */
+      let selectedModel = '3';
+
+      /* ---- DOM refs ---- */
+      const modelBtns   = document.querySelectorAll('.vp-model-btn');
+      const fVtocStart  = document.getElementById('f-vtoc-start');
+      const fVtocSpan   = document.getElementById('f-vtoc-span');
+      const fIdxStart   = document.getElementById('f-idx-start');
+      const fIdxSpan    = document.getElementById('f-idx-span');
+
+      const vsModel     = document.getElementById('vs-model');
+      const vsCyls      = document.getElementById('vs-cyls');
+      const vsTracks    = document.getElementById('vs-tracks');
+      const vsGb        = document.getElementById('vs-gb');
+
+      const vtocStartLoc  = document.getElementById('vtoc-start-loc');
+      const vtocSpanSize  = document.getElementById('vtoc-span-size');
+      const idxStartLoc   = document.getElementById('idx-start-loc');
+      const idxSpanSize   = document.getElementById('idx-span-size');
+
+      const barVtoc     = document.getElementById('bar-vtoc');
+      const barIndex    = document.getElementById('bar-index');
+      const bar64k      = document.getElementById('bar-64k');
+      const barScaleMid = document.getElementById('bar-scale-mid');
+      const barScaleEnd = document.getElementById('bar-scale-end');
+      const legend64k   = document.getElementById('legend-64k-item');
+
+      const msgs = {
+        overlap:      document.getElementById('msg-overlap'),
+        vtocOverflow: document.getElementById('msg-vtoc-overflow'),
+        idxOverflow:  document.getElementById('msg-idx-overflow'),
+        vtoc64k:      document.getElementById('msg-vtoc-64k'),
+        vtocNotFront: document.getElementById('msg-vtoc-notfront'),
+        idxGap:       document.getElementById('msg-idx-gap'),
+        ok:           document.getElementById('msg-ok'),
+      };
+
+      const resVtocExtent = document.getElementById('res-vtoc-extent');
+      const resVtocSize   = document.getElementById('res-vtoc-size');
+      const resIdxExtent  = document.getElementById('res-idx-extent');
+      const resIdxSize    = document.getElementById('res-idx-size');
+      const resSysTracks  = document.getElementById('res-sys-tracks');
+      const resUserSpace  = document.getElementById('res-user-space');
+
+      const estVtocMax    = document.getElementById('est-vtoc-max');
+      const estVtocIndex  = document.getElementById('est-vtoc-index');
+      const estDs1cyl     = document.getElementById('est-ds-1cyl');
+      const estDs50cyl    = document.getElementById('est-ds-50cyl');
+
+      // DSCBs per track: one DSCB is 140 bytes; a standard VTOC track holds 44 DSCBs
+      // (IBM documented figure for 3390 with standard VTOC blocksize).
+      // Track 0 (DSCB-0, DSCB-4, DSCB-5) consumes ~3 entries, so we deduct 1 track
+      // worth of overhead from the VTOC to be conservative.
+      const DSCBS_PER_TRACK   = 44;
+      const VTOC_OVERHEAD_TRK = 1;   // track 0 overhead (DSCB-0, format-4, format-5)
+
+      /* ---- Helpers ---- */
+      function comma(n) {
+        return n.toLocaleString('en-GB');
+      }
+
+      function fmtBytes(bytes) {
+        if (bytes >= BYTES_PER_GB) return (bytes / BYTES_PER_GB).toFixed(2) + ' GB';
+        if (bytes >= BYTES_PER_MB) return (bytes / BYTES_PER_MB).toFixed(2) + ' MB';
+        return (bytes / 1024).toFixed(1) + ' KB';
+      }
+
+      function trackToCylHead(track) {
+        const cyl  = Math.floor(track / TRACKS_PER_CYL);
+        const head = track % TRACKS_PER_CYL;
+        return 'Cyl ' + comma(cyl) + ', Head ' + head;
+      }
+
+      function totalTracks() {
+        return MODELS[selectedModel].cyls * TRACKS_PER_CYL;
+      }
+
+      /* ---- Model select ---- */
+      function setModel(key) {
+        selectedModel = key;
+        const m = MODELS[key];
+        modelBtns.forEach(b => b.classList.toggle('active', b.dataset.model === key));
+        const tot = m.cyls * TRACKS_PER_CYL;
+        vsModel.textContent  = m.name;
+        vsCyls.textContent   = comma(m.cyls);
+        vsTracks.textContent = comma(tot);
+        const gb = (tot * BYTES_PER_TRACK) / BYTES_PER_GB;
+        vsGb.textContent = gb.toFixed(2) + ' GB';
+        barScaleMid.textContent = comma(Math.round(tot / 2));
+        barScaleEnd.textContent = comma(tot);
+        // Show 64K marker only if volume exceeds it
+        const has64k = tot > VTOC_64K_LIMIT;
+        bar64k.style.display  = has64k ? '' : 'none';
+        legend64k.style.display = has64k ? '' : 'none';
+        if (has64k) {
+          bar64k.style.left = ((VTOC_64K_LIMIT / tot) * 100).toFixed(3) + '%';
+        }
+      }
+
+      modelBtns.forEach(btn => {
+        btn.addEventListener('click', () => { setModel(btn.dataset.model); updateHints(); });
+      });
+
+      /* ---- Live hints under each input ---- */
+      function updateHints() {
+        const tot = totalTracks();
+        const vs  = parseInt(fVtocStart.value, 10);
+        const vsp = parseInt(fVtocSpan.value,  10);
+        const is  = parseInt(fIdxStart.value,  10);
+        const isp = parseInt(fIdxSpan.value,   10);
+
+        vtocStartLoc.textContent = (!isNaN(vs) && vs >= 0)
+          ? trackToCylHead(vs) : '';
+        vtocSpanSize.textContent = (!isNaN(vsp) && vsp > 0)
+          ? fmtBytes(vsp * BYTES_PER_TRACK) : '';
+        idxStartLoc.textContent  = (!isNaN(is) && is >= 0)
+          ? trackToCylHead(is) : '';
+        idxSpanSize.textContent  = (!isNaN(isp) && isp > 0)
+          ? fmtBytes(isp * BYTES_PER_TRACK) : '';
+      }
+
+      [fVtocStart, fVtocSpan, fIdxStart, fIdxSpan].forEach(f => {
+        f.addEventListener('input', updateHints);
+      });
+
+      /* ---- Main calculate ---- */
+      function calculate() {
+        const tot       = totalTracks();
+        const vtocStart = parseInt(fVtocStart.value, 10);
+        const vtocSpan  = parseInt(fVtocSpan.value,  10);
+        const idxStart  = parseInt(fIdxStart.value,  10);
+        const idxSpan   = parseInt(fIdxSpan.value,   10);
+
+        // Validate inputs
+        if ([vtocStart, vtocSpan, idxStart, idxSpan].some(v => isNaN(v) || v < 0)
+            || vtocSpan < 1 || idxSpan < 1) {
+          Object.values(msgs).forEach(m => m.classList.remove('show'));
+          msgs.ok.textContent = 'Please fill in all fields with valid positive numbers.';
+          msgs.ok.classList.add('show');
+          msgs.ok.className = 'vp-msg vp-msg--error show';
+          return;
+        }
+
+        const vtocEnd = vtocStart + vtocSpan;  // exclusive end track
+        const idxEnd  = idxStart  + idxSpan;
+
+        /* ---- Checks ---- */
+        const overlap      = vtocStart < idxEnd && idxStart < vtocEnd;
+        const vtocOverflow = vtocEnd > tot;
+        const idxOverflow  = idxEnd  > tot;
+        const vtoc64k      = vtocEnd > VTOC_64K_LIMIT;
+        const vtocNotFront = vtocStart > 30;                         // beyond Cyl 2, Head 0
+        const idxGap       = idxStart !== vtocEnd;                   // not immediately adjacent
+
+        const hasError = overlap || vtocOverflow || idxOverflow || vtoc64k;
+
+        msgs.overlap.classList.toggle('show',      overlap);
+        msgs.vtocOverflow.classList.toggle('show',  vtocOverflow);
+        msgs.idxOverflow.classList.toggle('show',   idxOverflow);
+        msgs.vtoc64k.classList.toggle('show',       vtoc64k);
+        msgs.vtocNotFront.classList.toggle('show',  !hasError && vtocNotFront);
+        msgs.idxGap.classList.toggle('show',        !hasError && idxGap);
+        msgs.ok.classList.toggle('show',            !hasError && !vtocNotFront && !idxGap);
+        if (!hasError && !vtocNotFront && !idxGap) {
+          msgs.ok.textContent = 'Layout looks good.';
+          msgs.ok.className = 'vp-msg vp-msg--ok show';
+        }
+
+        /* ---- Bar ---- */
+        barVtoc.style.display  = '';
+        barIndex.style.display = '';
+
+        const vtocL = (vtocStart / tot * 100).toFixed(3) + '%';
+        const vtocW = Math.max(vtocSpan / tot * 100, 0.3).toFixed(3) + '%';
+        barVtoc.style.left  = vtocL;
+        barVtoc.style.width = vtocW;
+
+        const idxL = (idxStart / tot * 100).toFixed(3) + '%';
+        const idxW = Math.max(idxSpan / tot * 100, 0.3).toFixed(3) + '%';
+        barIndex.style.left  = idxL;
+        barIndex.style.width = idxW;
+
+        /* ---- Results ---- */
+        const sysTracks   = Math.max(vtocEnd, idxEnd);   // tracks consumed at front (conservative)
+        const userTracks  = tot - sysTracks;
+        const userBytes   = userTracks * BYTES_PER_TRACK;
+
+        resVtocExtent.textContent = 'Track ' + comma(vtocStart) + ' – ' + comma(vtocEnd - 1)
+          + ' (' + trackToCylHead(vtocStart) + ')';
+        resVtocSize.textContent   = fmtBytes(vtocSpan * BYTES_PER_TRACK)
+          + ' (' + comma(vtocSpan) + ' tracks)';
+        resIdxExtent.textContent  = 'Track ' + comma(idxStart) + ' – ' + comma(idxEnd - 1)
+          + ' (' + trackToCylHead(idxStart) + ')';
+        resIdxSize.textContent    = fmtBytes(idxSpan * BYTES_PER_TRACK)
+          + ' (' + comma(idxSpan) + ' tracks)';
+        resSysTracks.textContent  = comma(vtocSpan + idxSpan) + ' tracks ('
+          + comma(vtocSpan) + ' VTOC + ' + comma(idxSpan) + ' index)';
+        resUserSpace.textContent  = userTracks > 0
+          ? fmtBytes(userBytes) + ' (' + comma(userTracks) + ' tracks)'
+          : 'None — extents exceed volume';
+
+        // Dim value if errors present
+        [resVtocExtent, resVtocSize, resIdxExtent, resIdxSize,
+         resSysTracks, resUserSpace].forEach(el => {
+          el.className = 'vp-result-item__value' + (hasError ? ' dim' : '');
+        });
+
+        /* ---- Dataset estimates ---- */
+        // Max entries the VTOC can hold (deduct overhead tracks conservatively)
+        const usableVtocTrk = Math.max(vtocSpan - VTOC_OVERHEAD_TRK, 0);
+        const maxDsByVtoc   = usableVtocTrk * DSCBS_PER_TRACK;
+
+        // Index check: VTOCIX stores one 44-byte pointer per DSCB.
+        // A practical rule of thumb: index tracks × ~1,200 entries/track covers the VTOC.
+        const IDX_ENTRIES_PER_TRACK = 1200;
+        const idxCapacity   = idxSpan * IDX_ENTRIES_PER_TRACK;
+        const indexAdequate = idxCapacity >= maxDsByVtoc;
+
+        // Space-based estimates: how many datasets fit in user space at avg sizes
+        const userCyls   = Math.floor(userTracks / TRACKS_PER_CYL);
+        const ds1cyl     = userCyls;
+        const ds50cyl    = Math.floor(userCyls / 50);
+
+        // Binding constraint: minimum of VTOC capacity and space-based estimate
+        const spaceLimit1  = Math.min(maxDsByVtoc, ds1cyl);
+        const spaceLimit50 = Math.min(maxDsByVtoc, ds50cyl);
+
+        const dim = hasError ? ' dim' : '';
+
+        estVtocMax.textContent = hasError ? '—' : '~' + comma(maxDsByVtoc) + ' datasets';
+        estVtocMax.className = 'vp-est-item__value' + dim;
+
+        if (!hasError) {
+          if (indexAdequate) {
+            estVtocIndex.textContent = 'Index capacity ~' + comma(idxCapacity) + ' entries — sufficient';
+            estVtocIndex.className = 'vp-est-item__sub ok';
+          } else {
+            estVtocIndex.textContent = 'Index capacity ~' + comma(idxCapacity) + ' entries — may be tight';
+            estVtocIndex.className = 'vp-est-item__sub warn';
+          }
+        } else {
+          estVtocIndex.textContent = '—';
+          estVtocIndex.className = 'vp-est-item__sub';
+        }
+
+        estDs1cyl.textContent  = hasError ? '—'
+          : '~' + comma(spaceLimit1)  + (spaceLimit1  < ds1cyl   ? ' (VTOC bound)' : ' (space bound)');
+        estDs50cyl.textContent = hasError ? '—'
+          : '~' + comma(spaceLimit50) + (spaceLimit50 < ds50cyl  ? ' (VTOC bound)' : ' (space bound)');
+
+        [estDs1cyl, estDs50cyl].forEach(el => {
+          el.className = 'vp-est-item__value' + dim;
+        });
+      }
+
+      function reset() {
+        fVtocStart.value = '15';
+        fVtocSpan.value  = '90';
+        fIdxStart.value  = '105';
+        fIdxSpan.value   = '45';
+        Object.values(msgs).forEach(m => m.classList.remove('show'));
+        barVtoc.style.display  = 'none';
+        barIndex.style.display = 'none';
+        [resVtocExtent, resVtocSize, resIdxExtent, resIdxSize,
+         resSysTracks, resUserSpace].forEach(el => {
+          el.textContent = '—';
+          el.className = 'vp-result-item__value dim';
+        });
+        [estVtocMax, estDs1cyl, estDs50cyl].forEach(el => {
+          el.textContent = '—';
+          el.className = 'vp-est-item__value dim';
+        });
+        estVtocIndex.textContent = '—';
+        estVtocIndex.className = 'vp-est-item__sub';
+        updateHints();
+      }
+
+      document.getElementById('btn-calc').addEventListener('click', calculate);
+      document.getElementById('btn-reset').addEventListener('click', reset);
+
+      [fVtocStart, fVtocSpan, fIdxStart, fIdxSpan].forEach(f => {
+        f.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+      });
+
+      /* ---- Init ---- */
+      setModel('3');
+      updateHints();
+    })();
+  </script>
+</body>
+</html>
