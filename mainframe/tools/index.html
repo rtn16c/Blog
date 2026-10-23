@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mainframe Tools — Return 16</title>
+  <meta name="description" content="Handy calculators and reference tools for IBM Z mainframe work — DASD space, JCL, RACF and more.">
+  <link rel="icon" href="../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper">
+
+      <div class="toys-page-header">
+        <a href="../index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Mainframe
+        </a>
+        <h1>Mainframe Tools</h1>
+        <p>Calculators and quick-reference utilities for day-to-day mainframe work.</p>
+      </div>
+
+      <div class="toys-grid">
+
+        <div class="toy-card">
+          <div class="toy-card__icon">💾</div>
+          <div class="toy-card__title">3390 Space Conversion</div>
+          <p class="toy-card__desc">Convert between IBM 3390 DASD storage units — blocks, tracks, and cylinders — and their KB, MB, and GB equivalents. Enter any value and calculate the rest.</p>
+          <a href="3390-space/index.html" class="btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Open
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>

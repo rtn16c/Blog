@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quadratic Randomiser — Return 16</title>
-  <meta name="description" content="Generate random quadratic equations in standard form to practise solving. Three difficulty levels: easy, medium, and hard.">
+  <title>Polynomial Randomiser — Return 16</title>
+  <meta name="description" content="Generate random polynomial equations — quadratic, cubic, or quartic — to practise solving and factorising.">
   <link rel="icon" href="../../../images/sparkle-heart.png" type="image/png">
   <link rel="stylesheet" href="../../../css/style.css">
   <style>
@@ -95,12 +95,12 @@
     }
 
     .qr-equation {
-      font-size: 2.2rem;
+      font-size: 2rem;
       font-family: var(--font-mono);
       font-weight: 500;
       color: var(--pink-deep);
       letter-spacing: -0.01em;
-      line-height: 1.2;
+      line-height: 1.3;
       word-break: break-word;
     }
 
@@ -119,10 +119,10 @@
 
     .qr-coefficients {
       display: flex;
-      gap: 1.5rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
       justify-content: center;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       color: var(--text-muted);
       font-family: var(--font-mono);
     }
@@ -136,7 +136,7 @@
 
     .qr-coefficients[hidden] { display: none; }
 
-    .qr-difficulty-label {
+    .qr-degree-label {
       font-size: 0.8rem;
       font-weight: 500;
       color: var(--text-muted);
@@ -144,7 +144,7 @@
       letter-spacing: 0.08em;
     }
 
-    .qr-difficulty-label[hidden] { display: none; }
+    .qr-degree-label[hidden] { display: none; }
 
     .qr-prompt {
       font-size: 0.875rem;
@@ -229,7 +229,7 @@
     }
 
     @media (max-width: 480px) {
-      .qr-equation { font-size: 1.6rem; }
+      .qr-equation { font-size: 1.45rem; }
       .qr-card { padding: 1.75rem 1.25rem 1.5rem; }
     }
   </style>
@@ -269,40 +269,36 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
             Back to Math Toys
           </a>
-          <h1>Quadratic Randomiser</h1>
-          <p>Generate a quadratic equation in standard form <em>ax² + bx + c = 0</em> to practise solving.</p>
+          <h1>Polynomial Randomiser</h1>
+          <p>Generate a random polynomial equation set equal to zero. Choose your degree or let it pick for you.</p>
         </div>
 
-        <!-- Difficulty controls -->
+        <!-- Degree controls -->
         <div class="qr-controls">
-          <span class="qr-controls__label">Difficulty:</span>
-          <div class="qr-difficulty-group" role="group" aria-label="Difficulty level">
-            <button class="qr-diff-btn active" data-diff="easy">Easy</button>
-            <button class="qr-diff-btn" data-diff="medium">Medium</button>
-            <button class="qr-diff-btn" data-diff="hard">Hard</button>
+          <span class="qr-controls__label">Degree:</span>
+          <div class="qr-difficulty-group" role="group" aria-label="Polynomial degree">
+            <button class="qr-diff-btn active" data-diff="quadratic">Quadratic</button>
+            <button class="qr-diff-btn" data-diff="cubic">Cubic</button>
+            <button class="qr-diff-btn" data-diff="quartic">Quartic</button>
             <button class="qr-diff-btn" data-diff="random">Random</button>
           </div>
         </div>
 
         <!-- Prompt -->
-        <p class="qr-prompt">Factorise, complete the square, or use the quadratic formula to solve for <em>x</em>.</p>
+        <p class="qr-prompt" id="qr-prompt">Factorise or use the quadratic formula to find the roots.</p>
 
         <!-- Equation display -->
         <div class="qr-card" id="qr-card" aria-live="polite" aria-atomic="true">
-          <div class="qr-difficulty-label" id="qr-diff-display" hidden></div>
+          <div class="qr-degree-label" id="qr-diff-display" hidden></div>
           <div class="qr-equation qr-equation--idle" id="qr-equation">Press New Question to start</div>
-          <div class="qr-coefficients" id="qr-coefficients" hidden>
-            <span id="coeff-a">a = —</span>
-            <span id="coeff-b">b = —</span>
-            <span id="coeff-c">c = —</span>
-          </div>
+          <div class="qr-coefficients" id="qr-coefficients" hidden></div>
         </div>
 
         <!-- Toggles -->
         <div class="qr-toggles">
           <label class="qr-toggle">
             <input type="checkbox" id="show-coefficients">
-            Show a, b, c values
+            Show coefficients
           </label>
         </div>
 
@@ -349,23 +345,8 @@
     }
 
     /* ─────────────────────────────────────────────
-       Coefficient ranges per difficulty
-       Adjust these constants to tune each level.
+       Utility helpers
     ───────────────────────────────────────────── */
-    const RANGES = {
-      easy:   { aMin: 1, aMax: 3, rootMin: -6, rootMax: 6 },   // integer roots guaranteed
-      medium: { aMin: 1, aMax: 4, bMin: -10, bMax: 10,         // irrational roots (non-perfect discriminant)
-                cMin: -12, cMax: 12 },
-      hard:   { aMin: 1, aMax: 6, bMin: -15, bMax: 15,         // mix: repeated roots, negative discriminant
-                cMin: -20, cMax: 20 }
-    };
-
-    /* ── State ── */
-    let currentDiff = 'easy';
-    let currentEquation = null;   // { a, b, c, plainText }
-    const history = new Set();    // plaintext history to avoid repeats
-
-    /* ── Utility helpers ── */
     function randInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -376,193 +357,255 @@
       return v;
     }
 
-    /* ── Equation generators ── */
-
-    /**
-     * Easy: build from two integer roots p and q.
-     * Expands a(x - p)(x - q) = ax² - a(p+q)x + a(p*q).
-     */
-    function generateEasy() {
-      const r = RANGES.easy;
-      let a, p, q;
-      let attempts = 0;
-      do {
-        a = randIntNonZero(r.aMin, r.aMax);
-        p = randInt(r.rootMin, r.rootMax);
-        q = randInt(r.rootMin, r.rootMax);
-        attempts++;
-        // Reject trivially boring equations like x² = 0
-      } while (p === 0 && q === 0 && attempts < 40);
-      const b = -a * (p + q);
-      const c = a * p * q;
-      return { a, b, c };
-    }
-
-    /**
-     * Medium: coefficients chosen so the discriminant (b²-4ac) is positive
-     * but not a perfect square → irrational roots, good for quadratic formula practice.
-     */
-    function generateMedium() {
-      const r = RANGES.medium;
-      let a, b, c, disc;
-      let attempts = 0;
-      do {
-        a = randIntNonZero(r.aMin, r.aMax);
-        b = randInt(r.bMin, r.bMax);
-        c = randIntNonZero(r.cMin, r.cMax);
-        disc = b * b - 4 * a * c;
-        attempts++;
-      } while ((disc <= 0 || isPerfectSquare(disc)) && attempts < 200);
-      // Fallback: if we somehow couldn't satisfy within attempts, just return last attempt
-      return { a, b, c };
-    }
-
-    /**
-     * Hard: larger coefficients with deliberate mix —
-     *   ~1/3 repeated root (disc = 0), ~1/3 negative discriminant, ~1/3 two irrational roots.
-     */
-    function generateHard() {
-      const r = RANGES.hard;
-      const roll = Math.random();
-      let a, b, c;
-
-      if (roll < 0.33) {
-        // Repeated root: build a(x - p)² so disc = 0
-        a = randIntNonZero(r.aMin, r.aMax);
-        const p = randIntNonZero(-5, 5);
-        b = -2 * a * p;
-        c = a * p * p;
-      } else if (roll < 0.66) {
-        // Negative discriminant: ensure b²-4ac < 0
-        let disc, attempts = 0;
-        do {
-          a = randIntNonZero(r.aMin, r.aMax);
-          b = randInt(r.bMin, r.bMax);
-          c = randIntNonZero(1, r.cMax);   // c > 0 makes negative disc more likely
-          disc = b * b - 4 * a * c;
-          attempts++;
-        } while (disc >= 0 && attempts < 200);
-      } else {
-        // Two real irrational roots with bigger coefficients
-        let disc, attempts = 0;
-        do {
-          a = randIntNonZero(r.aMin, r.aMax);
-          b = randInt(r.bMin, r.bMax);
-          c = randInt(r.cMin, r.cMax === 0 ? 1 : r.cMax);
-          disc = b * b - 4 * a * c;
-          attempts++;
-        } while ((disc <= 0 || isPerfectSquare(disc)) && attempts < 200);
-      }
-      return { a, b, c };
-    }
-
-    /** Returns true if n is a perfect square (n ≥ 0). */
     function isPerfectSquare(n) {
       if (n < 0) return false;
       const s = Math.round(Math.sqrt(n));
       return s * s === n;
     }
 
-    /* ── Equation formatting ── */
+    /* ─────────────────────────────────────────────
+       Generators
+       Each returns an array of coefficients in
+       descending power order: [leading, ..., const]
+    ───────────────────────────────────────────── */
 
     /**
-     * Formats the quadratic as an HTML string, e.g. "3x² − 5x + 2 = 0".
-     * Handles signs correctly so we never show "+ -5x".
+     * Quadratic: ax² + bx + c = 0
+     * Built from two integer roots so it's always nicely solvable.
      */
-    function formatEquationHTML(a, b, c) {
-      const parts = [];
-
-      // a term (ax²)
-      if (a === 1)       parts.push('x<sup>2</sup>');
-      else if (a === -1) parts.push('−x<sup>2</sup>');
-      else               parts.push(a + 'x<sup>2</sup>');
-
-      // b term (bx)
-      if (b !== 0) {
-        if (b === 1)       parts.push('+ x');
-        else if (b === -1) parts.push('− x');
-        else if (b > 0)    parts.push('+ ' + b + 'x');
-        else               parts.push('− ' + Math.abs(b) + 'x');
-      }
-
-      // c term
-      if (c !== 0) {
-        if (c > 0) parts.push('+ ' + c);
-        else       parts.push('− ' + Math.abs(c));
-      }
-
-      return parts.join(' ') + ' = 0';
+    function generateQuadratic() {
+      let a, p, q, attempts = 0;
+      do {
+        a = randIntNonZero(1, 4);
+        p = randInt(-8, 8);
+        q = randInt(-8, 8);
+        attempts++;
+      } while (p === 0 && q === 0 && attempts < 40);
+      // a(x - p)(x - q) = ax² - a(p+q)x + a·p·q
+      return [a, -a * (p + q), a * p * q];
     }
 
     /**
-     * Plain-text version for clipboard, using ^ for superscript.
+     * Cubic: ax³ + bx² + cx + d = 0
+     * Built from three integer roots r1, r2, r3.
+     * Expands a(x - r1)(x - r2)(x - r3).
      */
-    function formatEquationText(a, b, c) {
+    function generateCubic() {
+      let a, r1, r2, r3, attempts = 0;
+      do {
+        a = randIntNonZero(1, 3);
+        r1 = randInt(-5, 5);
+        r2 = randInt(-5, 5);
+        r3 = randInt(-5, 5);
+        attempts++;
+        // Avoid all-zero roots
+      } while (r1 === 0 && r2 === 0 && r3 === 0 && attempts < 40);
+
+      // Expand (x - r1)(x - r2)(x - r3):
+      //   = x³ - (r1+r2+r3)x² + (r1r2+r1r3+r2r3)x - r1r2r3
+      const e1 = r1 + r2 + r3;
+      const e2 = r1 * r2 + r1 * r3 + r2 * r3;
+      const e3 = r1 * r2 * r3;
+      return [a, -a * e1, a * e2, -a * e3];
+    }
+
+    /**
+     * Quartic: ax⁴ + bx³ + cx² + dx + e = 0
+     * Built from four integer roots to keep it factorisable.
+     */
+    function generateQuartic() {
+      let a, r1, r2, r3, r4, attempts = 0;
+      do {
+        a = randIntNonZero(1, 2);
+        r1 = randInt(-4, 4);
+        r2 = randInt(-4, 4);
+        r3 = randInt(-4, 4);
+        r4 = randInt(-4, 4);
+        attempts++;
+      } while (r1 === 0 && r2 === 0 && r3 === 0 && r4 === 0 && attempts < 40);
+
+      // Expand (x - r1)(x - r2)(x - r3)(x - r4):
+      // Use elementary symmetric polynomials
+      const e1 = r1 + r2 + r3 + r4;
+      const e2 = r1*r2 + r1*r3 + r1*r4 + r2*r3 + r2*r4 + r3*r4;
+      const e3 = r1*r2*r3 + r1*r2*r4 + r1*r3*r4 + r2*r3*r4;
+      const e4 = r1 * r2 * r3 * r4;
+      return [a, -a * e1, a * e2, -a * e3, a * e4];
+    }
+
+    /* ─────────────────────────────────────────────
+       Equation formatting
+       coeffs = [leading, ..., constant], descending
+    ───────────────────────────────────────────── */
+    const DEGREE_NAMES = ['', 'x', 'x<sup>2</sup>', 'x<sup>3</sup>', 'x<sup>4</sup>'];
+    const DEGREE_NAMES_TEXT = ['', 'x', 'x^2', 'x^3', 'x^4'];
+
+    /** Returns an HTML string for the polynomial = 0. */
+    function formatPolyHTML(coeffs) {
+      const degree = coeffs.length - 1;
       const parts = [];
 
-      if (a === 1)       parts.push('x^2');
-      else if (a === -1) parts.push('-x^2');
-      else               parts.push(a + 'x^2');
+      for (let i = 0; i <= degree; i++) {
+        const power = degree - i;   // current power
+        const coeff = coeffs[i];
+        if (coeff === 0) continue;
 
-      if (b !== 0) {
-        if (b === 1)       parts.push('+ x');
-        else if (b === -1) parts.push('- x');
-        else if (b > 0)    parts.push('+ ' + b + 'x');
-        else               parts.push('- ' + Math.abs(b) + 'x');
+        const varPart = DEGREE_NAMES[power];
+        const absC = Math.abs(coeff);
+
+        let term;
+        if (power === 0) {
+          term = String(absC);
+        } else if (absC === 1) {
+          term = varPart;
+        } else {
+          term = absC + varPart;
+        }
+
+        if (parts.length === 0) {
+          // First (leading) term — include sign only if negative
+          parts.push(coeff < 0 ? '−' + term : term);
+        } else {
+          parts.push(coeff < 0 ? '− ' + term : '+ ' + term);
+        }
       }
 
-      if (c !== 0) {
-        if (c > 0) parts.push('+ ' + c);
-        else       parts.push('- ' + Math.abs(c));
-      }
-
-      return parts.join(' ') + ' = 0';
+      return (parts.length ? parts.join(' ') : '0') + ' = 0';
     }
+
+    /** Plain-text version for clipboard (uses ^ for superscripts). */
+    function formatPolyText(coeffs) {
+      const degree = coeffs.length - 1;
+      const parts = [];
+
+      for (let i = 0; i <= degree; i++) {
+        const power = degree - i;
+        const coeff = coeffs[i];
+        if (coeff === 0) continue;
+
+        const varPart = DEGREE_NAMES_TEXT[power];
+        const absC = Math.abs(coeff);
+
+        let term;
+        if (power === 0) {
+          term = String(absC);
+        } else if (absC === 1) {
+          term = varPart;
+        } else {
+          term = absC + varPart;
+        }
+
+        if (parts.length === 0) {
+          parts.push(coeff < 0 ? '-' + term : term);
+        } else {
+          parts.push(coeff < 0 ? '- ' + term : '+ ' + term);
+        }
+      }
+
+      return (parts.length ? parts.join(' ') : '0') + ' = 0';
+    }
+
+    /* ─────────────────────────────────────────────
+       Coefficient labels for display
+    ───────────────────────────────────────────── */
+    const COEFF_LABELS_BY_DEGREE = {
+      2: ['a', 'b', 'c'],
+      3: ['a', 'b', 'c', 'd'],
+      4: ['a', 'b', 'c', 'd', 'e']
+    };
+
+    function renderCoefficients(coeffs) {
+      const degree = coeffs.length - 1;
+      const labels = COEFF_LABELS_BY_DEGREE[degree] || coeffs.map((_, i) => String.fromCharCode(97 + i));
+      const el = document.getElementById('qr-coefficients');
+      el.innerHTML = '';
+      coeffs.forEach((v, i) => {
+        const span = document.createElement('span');
+        span.textContent = labels[i] + ' = ' + v;
+        el.appendChild(span);
+      });
+    }
+
+    /* ─────────────────────────────────────────────
+       Prompts per degree
+    ───────────────────────────────────────────── */
+    const PROMPTS = {
+      quadratic: 'Factorise, complete the square, or use the quadratic formula to find the roots.',
+      cubic:     'Factorise fully — try finding a rational root first, then reduce to a quadratic.',
+      quartic:   'Factorise fully — look for rational roots and factor pairs of quadratics.',
+      random:    'Find all roots of the polynomial — degree chosen at random.'
+    };
+
+    const DEGREE_DISPLAY = {
+      quadratic: 'Quadratic (degree 2)',
+      cubic:     'Cubic (degree 3)',
+      quartic:   'Quartic (degree 4)',
+      random:    'Random'
+    };
+
+    /* ── State ── */
+    let currentDiff = 'quadratic';
+    let currentEquation = null;   // { coeffs, plainText }
+    const history = new Set();
 
     /* ── Core: generate & display ── */
     function newQuestion() {
       const diff = currentDiff;
-      let eq;
+      let coeffs;
+      let resolvedDiff = diff;
       let key;
       let attempts = 0;
 
-      // Avoid repeating an equation seen this session (try up to 30 times)
       do {
-        if (diff === 'easy')        eq = generateEasy();
-        else if (diff === 'medium') eq = generateMedium();
-        else if (diff === 'hard')   eq = generateHard();
-        else {
-          // Random: pick any generator at random
-          const gens = [generateEasy, generateMedium, generateHard];
-          eq = gens[Math.floor(Math.random() * gens.length)]();
+        if (diff === 'random') {
+          const gens = [
+            { fn: generateQuadratic, name: 'quadratic' },
+            { fn: generateCubic,     name: 'cubic'     },
+            { fn: generateQuartic,   name: 'quartic'   }
+          ];
+          const pick = gens[Math.floor(Math.random() * gens.length)];
+          coeffs = pick.fn();
+          resolvedDiff = pick.name;
+        } else if (diff === 'quadratic') {
+          coeffs = generateQuadratic();
+          resolvedDiff = 'quadratic';
+        } else if (diff === 'cubic') {
+          coeffs = generateCubic();
+          resolvedDiff = 'cubic';
+        } else {
+          coeffs = generateQuartic();
+          resolvedDiff = 'quartic';
         }
-        key = `${eq.a},${eq.b},${eq.c}`;
+        key = coeffs.join(',');
         attempts++;
       } while (history.has(key) && attempts < 30);
 
       history.add(key);
-      // Keep history bounded to avoid memory growth in long sessions
       if (history.size > 500) history.clear();
 
-      currentEquation = { ...eq, plainText: formatEquationText(eq.a, eq.b, eq.c) };
+      const plainText = formatPolyText(coeffs);
+      currentEquation = { coeffs, plainText };
 
-      // Update DOM
+      // Update equation display
       const eqEl = document.getElementById('qr-equation');
-      eqEl.innerHTML = formatEquationHTML(eq.a, eq.b, eq.c);
+      eqEl.innerHTML = formatPolyHTML(coeffs);
       eqEl.classList.remove('qr-equation--idle');
-      document.getElementById('coeff-a').textContent = 'a = ' + eq.a;
-      document.getElementById('coeff-b').textContent = 'b = ' + eq.b;
-      document.getElementById('coeff-c').textContent = 'c = ' + eq.c;
 
-      // Show difficulty label now that a question exists
+      // Render coefficient spans
+      renderCoefficients(coeffs);
+
+      // Degree label
       const diffLabel = document.getElementById('qr-diff-display');
-      const labelMap = { easy: 'Easy', medium: 'Medium', hard: 'Hard', random: 'Random' };
-      diffLabel.textContent = labelMap[diff] || diff;
+      diffLabel.textContent = diff === 'random'
+        ? DEGREE_DISPLAY[resolvedDiff] + ' — Random'
+        : DEGREE_DISPLAY[resolvedDiff];
       diffLabel.hidden = false;
 
       document.getElementById('btn-copy').disabled = false;
 
-      // Sync coefficient visibility
+      // Update prompt to match selected (not resolved) degree
+      document.getElementById('qr-prompt').textContent = PROMPTS[diff];
+
       syncCoefficients();
     }
 
@@ -579,7 +622,6 @@
       navigator.clipboard.writeText(text).then(() => {
         showToast('Copied: ' + text);
       }).catch(() => {
-        // Fallback for browsers that block clipboard
         showToast('Could not copy — try manually selecting the equation.');
       });
     }
@@ -591,11 +633,13 @@
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    /* ── Difficulty buttons ── */
+    /* ── Degree buttons ── */
     document.querySelectorAll('.qr-diff-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentDiff = btn.dataset.diff;
         document.querySelectorAll('.qr-diff-btn').forEach(b => b.classList.toggle('active', b === btn));
+        // Update prompt immediately on switch
+        document.getElementById('qr-prompt').textContent = PROMPTS[currentDiff];
       });
     });
 

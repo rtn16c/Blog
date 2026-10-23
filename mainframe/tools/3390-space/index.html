@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3390 Space Conversion — Mainframe Tools — Return 16</title>
+  <meta name="description" content="Convert IBM 3390 DASD storage units — blocks, tracks, and cylinders — to and from KB, MB, and GB.">
+  <link rel="icon" href="../../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    /* ===========================
+       3390 DASD Calculator
+       =========================== */
+    .dasd-calc {
+      background: var(--pink-card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1.75rem 1.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .dasd-calc__title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    .dasd-calc__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 580px) {
+      .dasd-calc__grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    .dasd-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .dasd-field__label {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--pink-strong);
+    }
+
+    .dasd-field__unit {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-left: 0.3rem;
+    }
+
+    .dasd-field__input {
+      padding: 0.5rem 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      background: var(--pink-bg);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+      width: 100%;
+    }
+
+    .dasd-field__input:focus {
+      border-color: var(--pink-strong);
+      background: #fff;
+    }
+
+    .dasd-field__input.is-source {
+      border-color: var(--pink-mid);
+      background: var(--pink-light);
+    }
+
+    .dasd-field__input.is-result {
+      background: var(--pink-card);
+      color: var(--text-secondary);
+    }
+
+    .dasd-calc__divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: var(--border-light);
+      margin: 0.25rem 0;
+    }
+
+    .dasd-calc__section-label {
+      grid-column: 1 / -1;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: -0.5rem;
+    }
+
+    .dasd-calc__actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .dasd-calc__error {
+      font-size: 0.8rem;
+      color: var(--pink-strong);
+      font-family: var(--font-mono);
+      min-height: 1.2em;
+      margin-top: 0.5rem;
+    }
+
+    /* Quick Reference — three distinct category groups */
+    .dasd-ref {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-light);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.1rem 1.5rem;
+    }
+
+    .dasd-ref-group__heading {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .dasd-ref-group__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .dasd-ref-group__item {
+      font-size: 0.775rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .dasd-ref-group__item strong {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../../mathematics/index.html">Mathematics</a>
+        <a href="../../../resources.html">Resources</a>
+        <a href="../../../history.html">Post History</a>
+        <a href="../../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <div class="toys-page-header">
+        <a href="../index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Mainframe Tools
+        </a>
+        <h1>3390 Space Conversion</h1>
+      </div>
+
+      <div class="dasd-calc" id="dasd-calc">
+        <div class="dasd-calc__title">Calculate Space</div>
+
+        <div class="dasd-calc__grid">
+
+          <div class="dasd-calc__section-label">IBM Storage Units</div>
+
+          <div class="dasd-field">
+            <label class="dasd-field__label" for="f-blocks">
+              Blocks<span class="dasd-field__unit">(512 B each)</span>
+            </label>
+            <input class="dasd-field__input" id="f-blocks" type="number" min="0" step="1" placeholder="e.g. 16384" autocomplete="off">
+          </div>
+
+          <div class="dasd-field">
+            <label class="dasd-field__label" for="f-tracks">
+              Tracks
+            </label>
+            <input class="dasd-field__input" id="f-tracks" type="number" min="0" step="1" placeholder="e.g. 150" autocomplete="off">
+          </div>
+
+          <div class="dasd-field">
+            <label class="dasd-field__label" for="f-cyls">
+              Cylinders
+            </label>
+            <input class="dasd-field__input" id="f-cyls" type="number" min="0" step="1" placeholder="e.g. 10" autocomplete="off">
+          </div>
+
+          <div class="dasd-calc__divider"></div>
+          <div class="dasd-calc__section-label">Size</div>
+
+          <div class="dasd-field">
+            <label class="dasd-field__label" for="f-kb">
+              Kilobytes<span class="dasd-field__unit">(KB)</span>
+            </label>
+            <input class="dasd-field__input" id="f-kb" type="number" min="0" step="any" placeholder="e.g. 8192" autocomplete="off">
+          </div>
+
+          <div class="dasd-field">
+            <label class="dasd-field__label" for="f-mb">
+              Megabytes<span class="dasd-field__unit">(MB)</span>
+            </label>
+            <input class="dasd-field__input" id="f-mb" type="number" min="0" step="any" placeholder="e.g. 8" autocomplete="off">
+          </div>
+
+          <div class="dasd-field">
+            <label class="dasd-field__label" for="f-gb">
+              Gigabytes<span class="dasd-field__unit">(GB)</span>
+            </label>
+            <input class="dasd-field__input" id="f-gb" type="number" min="0" step="any" placeholder="e.g. 0.008" autocomplete="off">
+          </div>
+
+        </div>
+
+        <div class="dasd-calc__actions">
+          <button class="btn" id="btn-calc" type="button">Calculate</button>
+          <button class="btn btn--secondary" id="btn-reset" type="button">Reset</button>
+        </div>
+        <div class="dasd-calc__error" id="calc-error" aria-live="polite"></div>
+
+        <!-- Quick Reference — three categories -->
+        <div class="dasd-ref">
+
+          <div class="dasd-ref-group">
+            <div class="dasd-ref-group__heading">Bytes · Tracks · Cylinders</div>
+            <ul class="dasd-ref-group__list">
+              <li class="dasd-ref-group__item"><strong>1 block</strong> = 512 bytes</li>
+              <li class="dasd-ref-group__item"><strong>1 track</strong> = 56,664 bytes</li>
+              <li class="dasd-ref-group__item"><strong>1 cylinder</strong> = 15 tracks</li>
+              <li class="dasd-ref-group__item"><strong>1 cylinder</strong> = 849,960 bytes</li>
+            </ul>
+          </div>
+
+          <div class="dasd-ref-group">
+            <div class="dasd-ref-group__heading">3390 Model Sizes</div>
+            <ul class="dasd-ref-group__list">
+              <li class="dasd-ref-group__item"><strong>Mod 3</strong> = 3,339 cylinders</li>
+              <li class="dasd-ref-group__item"><strong>Mod 9</strong> = 10,017 cylinders</li>
+              <li class="dasd-ref-group__item"><strong>Mod 27</strong> = 32,760 cylinders</li>
+              <li class="dasd-ref-group__item"><strong>Mod 54</strong> = 65,520 cylinders</li>
+            </ul>
+          </div>
+
+          <div class="dasd-ref-group">
+            <div class="dasd-ref-group__heading">KB · MB · GB in Bytes</div>
+            <ul class="dasd-ref-group__list">
+              <li class="dasd-ref-group__item"><strong>1 KB</strong> = 1,024 bytes</li>
+              <li class="dasd-ref-group__item"><strong>1 MB</strong> = 1,048,576 bytes</li>
+              <li class="dasd-ref-group__item"><strong>1 GB</strong> = 1,073,741,824 bytes</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../mainframe/index.html">Mainframe</a>
+        <a href="../../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../../mathematics/index.html">Mathematics</a>
+        <a href="../../../resources.html">Resources</a>
+        <a href="../../../history.html">Post History</a>
+        <a href="../../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    (function () {
+      // 3390 DASD constants
+      const BYTES_PER_TRACK = 56664;
+      const TRACKS_PER_CYL  = 15;
+      const BYTES_PER_CYL   = BYTES_PER_TRACK * TRACKS_PER_CYL; // 849,960
+      const BYTES_PER_BLOCK = 512;
+      const BYTES_PER_KB    = 1024;
+      const BYTES_PER_MB    = 1024 * 1024;
+      const BYTES_PER_GB    = 1024 * 1024 * 1024;
+
+      const fields = {
+        blocks: document.getElementById('f-blocks'),
+        tracks: document.getElementById('f-tracks'),
+        cyls:   document.getElementById('f-cyls'),
+        kb:     document.getElementById('f-kb'),
+        mb:     document.getElementById('f-mb'),
+        gb:     document.getElementById('f-gb'),
+      };
+
+      const errorEl = document.getElementById('calc-error');
+      let sourceField = null;
+
+      Object.keys(fields).forEach(key => {
+        fields[key].addEventListener('focus', () => { sourceField = key; });
+        fields[key].addEventListener('input', () => { sourceField = key; });
+      });
+
+      function fmt(n, decimals) {
+        if (!isFinite(n)) return '';
+        return parseFloat(n.toFixed(decimals)).toString();
+      }
+
+      function calculate() {
+        errorEl.textContent = '';
+
+        if (!sourceField) {
+          errorEl.textContent = 'Click into a field and enter a value first.';
+          return;
+        }
+
+        const raw = fields[sourceField].value.trim();
+        if (raw === '') {
+          errorEl.textContent = 'Please enter a value to convert.';
+          return;
+        }
+
+        const val = parseFloat(raw);
+        if (isNaN(val) || val < 0) {
+          errorEl.textContent = 'Please enter a valid positive number.';
+          return;
+        }
+
+        // Convert source to bytes
+        let bytes;
+        switch (sourceField) {
+          case 'blocks': bytes = val * BYTES_PER_BLOCK; break;
+          case 'tracks': bytes = val * BYTES_PER_TRACK; break;
+          case 'cyls':   bytes = val * BYTES_PER_CYL;   break;
+          case 'kb':     bytes = val * BYTES_PER_KB;     break;
+          case 'mb':     bytes = val * BYTES_PER_MB;     break;
+          case 'gb':     bytes = val * BYTES_PER_GB;     break;
+        }
+
+        Object.values(fields).forEach(f => f.classList.remove('is-source', 'is-result'));
+        fields[sourceField].classList.add('is-source');
+
+        const results = {
+          blocks: bytes / BYTES_PER_BLOCK,
+          tracks: bytes / BYTES_PER_TRACK,
+          cyls:   bytes / BYTES_PER_CYL,
+          kb:     bytes / BYTES_PER_KB,
+          mb:     bytes / BYTES_PER_MB,
+          gb:     bytes / BYTES_PER_GB,
+        };
+
+        Object.keys(results).forEach(key => {
+          if (key === sourceField) return;
+          const v = results[key];
+          let display;
+          if (key === 'blocks' || key === 'tracks' || key === 'cyls') {
+            display = fmt(v, 2);
+          } else if (key === 'kb') {
+            display = fmt(v, 3);
+          } else if (key === 'mb') {
+            display = fmt(v, 6);
+          } else {
+            display = fmt(v, 9);
+          }
+          fields[key].value = display;
+          fields[key].classList.add('is-result');
+        });
+      }
+
+      function reset() {
+        Object.values(fields).forEach(f => {
+          f.value = '';
+          f.classList.remove('is-source', 'is-result');
+        });
+        errorEl.textContent = '';
+        sourceField = null;
+      }
+
+      document.getElementById('btn-calc').addEventListener('click', calculate);
+      document.getElementById('btn-reset').addEventListener('click', reset);
+
+      Object.values(fields).forEach(f => {
+        f.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+      });
+    })();
+  </script>
+</body>
+</html>
