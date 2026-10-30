@@ -1434,16 +1434,15 @@ a:hover { color: var(--text-link-hover); text-decoration: underline; }
    =========================== */
 
 .tools-promo-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.75rem;
 }
 
-@media (max-width: 640px) {
-  .tools-promo-row {
-    grid-template-columns: 1fr;
-  }
+.tools-promo-row .tool-tile {
+  flex: 0 1 calc(50% - 0.5rem);
+  min-width: 200px;
 }
 
 /* Clickable tool tiles */

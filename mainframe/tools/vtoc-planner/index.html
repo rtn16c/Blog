@@ -230,28 +230,93 @@
       border-radius: var(--radius-sm);
     }
 
-    /* VTOC segment — pastel blue */
+    /* VTOC segment — blue */
     .vp-bar-vtoc {
       position: absolute;
       top: 0;
       bottom: 0;
-      background: #bfdbfe;
-      border: 1.5px solid #93c5fd;
+      background: #93c5fd;
+      border: 1.5px solid #3b82f6;
       border-radius: 3px;
       transition: left 0.25s, width 0.25s;
       min-width: 2px;
     }
 
-    /* Index segment — pastel purple */
+    /* Index segment — purple */
     .vp-bar-index {
       position: absolute;
       top: 0;
       bottom: 0;
-      background: #e9d5ff;
-      border: 1.5px solid #c4b5fd;
+      background: #c4b5fd;
+      border: 1.5px solid #7c3aed;
       border-radius: 3px;
       transition: left 0.25s, width 0.25s;
       min-width: 2px;
+    }
+
+    /* ---- Zoom inset ---- */
+    .vp-zoom {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary, #f7f8fa);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+    }
+
+    .vp-zoom.visible { display: block; }
+
+    .vp-zoom__title {
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .vp-zoom-wrap {
+      position: relative;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      overflow: visible;
+      margin-bottom: 0.3rem;
+    }
+
+    .vp-zoom-total {
+      position: absolute;
+      inset: 0;
+      background: #bbf7d0;
+      border: 1.5px solid #86efac;
+      border-radius: var(--radius-sm);
+    }
+
+    .vp-zoom-vtoc {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: #93c5fd;
+      border: 1.5px solid #3b82f6;
+      border-radius: 3px;
+      min-width: 3px;
+    }
+
+    .vp-zoom-index {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: #c4b5fd;
+      border: 1.5px solid #7c3aed;
+      border-radius: 3px;
+      min-width: 3px;
+    }
+
+    .vp-zoom-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-top: 0.25rem;
     }
 
     /* 64K track limit marker */
@@ -312,8 +377,8 @@
     }
 
     .vp-legend-swatch--total { background: #bbf7d0; border: 1.5px solid #86efac; }
-    .vp-legend-swatch--vtoc  { background: #bfdbfe; border: 1.5px solid #93c5fd; }
-    .vp-legend-swatch--index { background: #e9d5ff; border: 1.5px solid #c4b5fd; }
+    .vp-legend-swatch--vtoc  { background: #93c5fd; border: 1.5px solid #3b82f6; }
+    .vp-legend-swatch--index { background: #c4b5fd; border: 1.5px solid #7c3aed; }
 
     /* ===========================
        Results summary
@@ -569,6 +634,19 @@
             <span id="bar-scale-end"></span>
           </div>
 
+          <div class="vp-zoom" id="vp-zoom">
+            <div class="vp-zoom__title">Front-of-volume zoom — <span id="vp-zoom-label"></span></div>
+            <div class="vp-zoom-wrap" role="img" aria-label="Front-of-volume zoom">
+              <div class="vp-zoom-total"></div>
+              <div class="vp-zoom-vtoc"  id="zoom-vtoc"  style="display:none"></div>
+              <div class="vp-zoom-index" id="zoom-index" style="display:none"></div>
+            </div>
+            <div class="vp-zoom-scale">
+              <span>Track 0</span>
+              <span id="zoom-scale-end"></span>
+            </div>
+          </div>
+
           <div class="vp-legend">
             <div class="vp-legend-item"><div class="vp-legend-swatch vp-legend-swatch--total"></div>Total volume</div>
             <div class="vp-legend-item"><div class="vp-legend-swatch vp-legend-swatch--vtoc"></div>VTOC</div>
@@ -699,6 +777,12 @@
       const barScaleMid = document.getElementById('bar-scale-mid');
       const barScaleEnd = document.getElementById('bar-scale-end');
       const legend64k   = document.getElementById('legend-64k-item');
+
+      const vpZoom      = document.getElementById('vp-zoom');
+      const vpZoomLabel = document.getElementById('vp-zoom-label');
+      const zoomVtoc    = document.getElementById('zoom-vtoc');
+      const zoomIndex   = document.getElementById('zoom-index');
+      const zoomScaleEnd = document.getElementById('zoom-scale-end');
 
       const msgs = {
         invalid:      document.getElementById('msg-invalid'),
@@ -862,6 +946,30 @@
         barIndex.style.left  = idxL;
         barIndex.style.width = idxW;
 
+        /* ---- Zoom inset — show when segments occupy < 5% of volume ---- */
+        const sysEnd = Math.max(vtocEnd, idxEnd);
+        const showZoom = !hasError && (sysEnd / tot) < 0.05;
+        if (showZoom) {
+          // Zoom window: track 0 to 2× the system area end, with a min of 300 tracks
+          const zoomWindow = Math.max(sysEnd * 2, 300);
+          zoomScaleEnd.textContent = 'Track ' + comma(zoomWindow);
+          vpZoomLabel.textContent  = 'tracks 0 – ' + comma(zoomWindow)
+            + ' (' + ((zoomWindow / tot * 100).toFixed(1)) + '% of volume)';
+
+          zoomVtoc.style.display  = vtocOverflow  ? 'none' : '';
+          zoomIndex.style.display = idxOverflow   ? 'none' : '';
+
+          zoomVtoc.style.left  = (vtocStart / zoomWindow * 100).toFixed(3) + '%';
+          zoomVtoc.style.width = Math.max(vtocSpan / zoomWindow * 100, 0.5).toFixed(3) + '%';
+
+          zoomIndex.style.left  = (idxStart / zoomWindow * 100).toFixed(3) + '%';
+          zoomIndex.style.width = Math.max(idxSpan / zoomWindow * 100, 0.5).toFixed(3) + '%';
+
+          vpZoom.classList.add('visible');
+        } else {
+          vpZoom.classList.remove('visible');
+        }
+
         /* ---- Results ---- */
         const sysTracks   = Math.max(vtocEnd, idxEnd);   // tracks consumed at front (conservative)
         const userTracks  = tot - sysTracks;
@@ -943,6 +1051,9 @@
         Object.values(msgs).forEach(m => m.classList.remove('show'));
         barVtoc.style.display  = 'none';
         barIndex.style.display = 'none';
+        vpZoom.classList.remove('visible');
+        zoomVtoc.style.display  = 'none';
+        zoomIndex.style.display = 'none';
         [resVtocExtent, resVtocSize, resIdxExtent, resIdxSize,
          resSysTracks, resUserSpace].forEach(el => {
           el.textContent = '—';
