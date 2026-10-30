@@ -254,6 +254,18 @@
       min-width: 2px;
     }
 
+    /* EAV extended region — amber, right side of 64K line */
+    .vp-bar-eav {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(253, 230, 138, 0.45);
+      border: 1.5px solid #f59e0b;
+      border-radius: 3px;
+      transition: left 0.25s, width 0.25s;
+      min-width: 2px;
+    }
+
     /* ---- Zoom inset ---- */
     .vp-zoom {
       display: none;
@@ -484,6 +496,47 @@
     .vp-est-item__sub.warn { color: #92400e; }
     .vp-est-item__sub.ok   { color: #166534; }
 
+    /* EAV cylinder input row */
+    .vp-eav-row {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: -0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .vp-eav-row.visible { display: flex; flex-wrap: wrap; }
+
+    .vp-eav-row label {
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .vp-eav-row input {
+      width: 10rem;
+      padding: 0.3rem 0.6rem;
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-sm);
+      background: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+    }
+
+    .vp-eav-row input:focus {
+      outline: none;
+      border-color: var(--pink-strong);
+    }
+
+    .vp-eav-row .vp-eav-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .vp-legend-swatch--eav { background: #fde68a; border: 1.5px solid #f59e0b; }
+
     .dasd-calc {
       background: var(--pink-card);
       border: 1.5px solid var(--border-mid);
@@ -542,10 +595,18 @@
 
         <!-- Model selector -->
         <div class="vp-model-row" role="group" aria-label="Select 3390 model">
-          <button class="vp-model-btn active" data-model="3"  type="button">Mod 3</button>
-          <button class="vp-model-btn"        data-model="9"  type="button">Mod 9</button>
-          <button class="vp-model-btn"        data-model="27" type="button">Mod 27</button>
-          <button class="vp-model-btn"        data-model="54" type="button">Mod 54</button>
+          <button class="vp-model-btn active" data-model="3"   type="button">Mod 3</button>
+          <button class="vp-model-btn"        data-model="9"   type="button">Mod 9</button>
+          <button class="vp-model-btn"        data-model="27"  type="button">Mod 27</button>
+          <button class="vp-model-btn"        data-model="54"  type="button">Mod 54</button>
+          <button class="vp-model-btn"        data-model="eav" type="button">EAV</button>
+        </div>
+
+        <!-- EAV cylinder count input (shown only when EAV is selected) -->
+        <div class="vp-eav-row" id="vp-eav-row">
+          <label for="f-eav-cyls">EAV cylinders:</label>
+          <input id="f-eav-cyls" type="number" min="65521" max="1182006" step="1" value="262668" autocomplete="off">
+          <span class="vp-eav-hint">Range: 65,521 – 1,182,006</span>
         </div>
 
         <!-- Volume summary -->
@@ -609,6 +670,7 @@
           <div class="vp-msg vp-msg--error" id="msg-overlap">VTOC and index extents overlap — they must not share any tracks.</div>
           <div class="vp-msg vp-msg--error" id="msg-vtoc-overflow">VTOC extends beyond the end of the volume.</div>
           <div class="vp-msg vp-msg--error" id="msg-idx-overflow">Index extends beyond the end of the volume.</div>
+          <div class="vp-msg vp-msg--error" id="msg-eav-invalid">EAV cylinder count must be between 65,521 and 1,182,006.</div>
           <div class="vp-msg vp-msg--error" id="msg-vtoc-64k">VTOC crosses the 64,520-track architectural limit — this will cause system failures on any volume.</div>
           <div class="vp-msg vp-msg--error" id="msg-idx-cyllimit">Index end exceeds the 65,520-cylinder architectural limit for VTOCIX placement (ICKDSF restriction).</div>
           <div class="vp-msg vp-msg--error" id="msg-idx-spanlimit">Index span exceeds 65,534 tracks — the maximum size permitted for a VTOC Index dataset.</div>
@@ -626,6 +688,7 @@
             <div class="vp-bar-64k"  id="bar-64k"  style="display:none"></div>
             <div class="vp-bar-vtoc" id="bar-vtoc" style="display:none"></div>
             <div class="vp-bar-index" id="bar-index" style="display:none"></div>
+            <div class="vp-bar-eav"  id="bar-eav"  style="display:none"></div>
           </div>
 
           <div class="vp-bar-scale">
@@ -653,6 +716,9 @@
             <div class="vp-legend-item"><div class="vp-legend-swatch vp-legend-swatch--index"></div>VTOC Index</div>
             <div class="vp-legend-item" id="legend-64k-item" style="display:none">
               <div style="width:14px;height:14px;background:#f97316;border-radius:3px;flex-shrink:0"></div>64K track limit
+            </div>
+            <div class="vp-legend-item" id="legend-eav-item" style="display:none">
+              <div class="vp-legend-swatch vp-legend-swatch--eav"></div>EAV extended space
             </div>
           </div>
         </div>
@@ -682,6 +748,10 @@
           <div class="vp-result-item">
             <div class="vp-result-item__label">Eligible user space</div>
             <div class="vp-result-item__value dim" id="res-user-space">—</div>
+          </div>
+          <div class="vp-result-item" id="res-eav-row" style="display:none">
+            <div class="vp-result-item__label">EAV extended space</div>
+            <div class="vp-result-item__value dim" id="res-eav-space">—</div>
           </div>
         </div>
 
@@ -749,7 +819,12 @@
         '9':  { name: '3390-9',  cyls: 10017 },
         '27': { name: '3390-27', cyls: 32760 },
         '54': { name: '3390-54', cyls: 65520 },
+        // EAV: cylinders are user-supplied (min 65521, max 1182006)
+        'eav': { name: '3390 EAV', cyls: null },
       };
+
+      const EAV_MIN_CYLS = 65521;
+      const EAV_MAX_CYLS = 1182006;
 
       /* ---- State ---- */
       let selectedModel = '3';
@@ -760,6 +835,8 @@
       const fVtocSpan   = document.getElementById('f-vtoc-span');
       const fIdxStart   = document.getElementById('f-idx-start');
       const fIdxSpan    = document.getElementById('f-idx-span');
+      const fEavCyls    = document.getElementById('f-eav-cyls');
+      const eavRow      = document.getElementById('vp-eav-row');
 
       const vsModel     = document.getElementById('vs-model');
       const vsCyls      = document.getElementById('vs-cyls');
@@ -773,10 +850,12 @@
 
       const barVtoc     = document.getElementById('bar-vtoc');
       const barIndex    = document.getElementById('bar-index');
+      const barEav      = document.getElementById('bar-eav');
       const bar64k      = document.getElementById('bar-64k');
       const barScaleMid = document.getElementById('bar-scale-mid');
       const barScaleEnd = document.getElementById('bar-scale-end');
       const legend64k   = document.getElementById('legend-64k-item');
+      const legendEav   = document.getElementById('legend-eav-item');
 
       const vpZoom      = document.getElementById('vp-zoom');
       const vpZoomLabel = document.getElementById('vp-zoom-label');
@@ -789,6 +868,7 @@
         overlap:      document.getElementById('msg-overlap'),
         vtocOverflow: document.getElementById('msg-vtoc-overflow'),
         idxOverflow:  document.getElementById('msg-idx-overflow'),
+        eavInvalid:   document.getElementById('msg-eav-invalid'),
         vtoc64k:      document.getElementById('msg-vtoc-64k'),
         idxCylLimit:  document.getElementById('msg-idx-cyllimit'),
         idxSpanLimit: document.getElementById('msg-idx-spanlimit'),
@@ -803,6 +883,8 @@
       const resIdxSize    = document.getElementById('res-idx-size');
       const resSysTracks  = document.getElementById('res-sys-tracks');
       const resUserSpace  = document.getElementById('res-user-space');
+      const resEavRow     = document.getElementById('res-eav-row');
+      const resEavSpace   = document.getElementById('res-eav-space');
 
       const estVtocMax    = document.getElementById('est-vtoc-max');
       const estVtocIndex  = document.getElementById('est-vtoc-index');
@@ -834,17 +916,27 @@
       }
 
       function totalTracks() {
+        if (selectedModel === 'eav') {
+          const c = parseInt(fEavCyls.value, 10);
+          return (isNaN(c) ? EAV_MIN_CYLS : c) * TRACKS_PER_CYL;
+        }
         return MODELS[selectedModel].cyls * TRACKS_PER_CYL;
       }
 
       /* ---- Model select ---- */
       function setModel(key) {
         selectedModel = key;
-        const m = MODELS[key];
+        const isEav = key === 'eav';
+        eavRow.classList.toggle('visible', isEav);
         modelBtns.forEach(b => b.classList.toggle('active', b.dataset.model === key));
-        const tot = m.cyls * TRACKS_PER_CYL;
-        vsModel.textContent  = m.name;
-        vsCyls.textContent   = comma(m.cyls);
+
+        const cyls = isEav
+          ? Math.max(EAV_MIN_CYLS, Math.min(EAV_MAX_CYLS, parseInt(fEavCyls.value, 10) || EAV_MIN_CYLS))
+          : MODELS[key].cyls;
+        const tot = cyls * TRACKS_PER_CYL;
+
+        vsModel.textContent  = isEav ? '3390 EAV' : MODELS[key].name;
+        vsCyls.textContent   = comma(cyls);
         vsTracks.textContent = comma(tot);
         const gb = (tot * BYTES_PER_TRACK) / BYTES_PER_GB;
         vsGb.textContent = gb.toFixed(2) + ' GB';
@@ -852,16 +944,27 @@
         barScaleEnd.textContent = comma(tot);
         // Show 64K marker only if volume exceeds it
         const has64k = tot > VTOC_64K_LIMIT;
-        bar64k.style.display  = has64k ? '' : 'none';
+        bar64k.style.display    = has64k ? '' : 'none';
         legend64k.style.display = has64k ? '' : 'none';
         if (has64k) {
           bar64k.style.left = ((VTOC_64K_LIMIT / tot) * 100).toFixed(3) + '%';
+        }
+        // EAV extended space bar: covers tracks 64520–end of volume
+        barEav.style.display   = (isEav && has64k) ? '' : 'none';
+        legendEav.style.display = (isEav && has64k) ? '' : 'none';
+        if (isEav && has64k) {
+          const eavStart = VTOC_64K_LIMIT;
+          barEav.style.left  = ((eavStart / tot) * 100).toFixed(3) + '%';
+          barEav.style.width = (((tot - eavStart) / tot) * 100).toFixed(3) + '%';
         }
       }
 
       modelBtns.forEach(btn => {
         btn.addEventListener('click', () => { setModel(btn.dataset.model); updateHints(); });
       });
+
+      // Recompute when user types a new EAV cylinder count
+      fEavCyls.addEventListener('input', () => { setModel('eav'); updateHints(); });
 
       /* ---- Live hints under each input ---- */
       function updateHints() {
@@ -893,8 +996,19 @@
         const idxStart  = parseInt(fIdxStart.value,  10);
         const idxSpan   = parseInt(fIdxSpan.value,   10);
 
-        // Validate: all fields must be non-negative integers, spans ≥ 1
+        // Validate EAV cylinder count first
         Object.values(msgs).forEach(m => m.classList.remove('show'));
+        if (selectedModel === 'eav') {
+          const eavCyls = parseInt(fEavCyls.value, 10);
+          if (isNaN(eavCyls) || eavCyls < EAV_MIN_CYLS || eavCyls > EAV_MAX_CYLS) {
+            msgs.eavInvalid.classList.add('show');
+            barVtoc.style.display  = 'none';
+            barIndex.style.display = 'none';
+            return;
+          }
+        }
+
+        // Validate: all fields must be non-negative integers, spans ≥ 1
         if ([vtocStart, vtocSpan, idxStart, idxSpan].some(v => isNaN(v) || v < 0)
             || vtocSpan < 1 || idxSpan < 1) {
           msgs.invalid.classList.add('show');
@@ -989,11 +1103,25 @@
           ? fmtBytes(userBytes) + ' (' + comma(userTracks) + ' tracks)'
           : 'None — extents exceed volume';
 
+        // EAV extended space: tracks beyond 64K limit that are only accessible via XAM/EAV APIs
+        const isEav = selectedModel === 'eav';
+        resEavRow.style.display = isEav ? '' : 'none';
+        if (isEav && !hasError) {
+          const eavExtTracks = Math.max(0, tot - VTOC_64K_LIMIT);
+          const eavExtBytes  = eavExtTracks * BYTES_PER_TRACK;
+          resEavSpace.textContent = eavExtTracks > 0
+            ? fmtBytes(eavExtBytes) + ' (' + comma(eavExtTracks) + ' tracks, above 64K limit)'
+            : 'None';
+        } else {
+          resEavSpace.textContent = '—';
+        }
+
         // Dim value if errors present
         [resVtocExtent, resVtocSize, resIdxExtent, resIdxSize,
          resSysTracks, resUserSpace].forEach(el => {
           el.className = 'vp-result-item__value' + (hasError ? ' dim' : '');
         });
+        resEavSpace.className = 'vp-result-item__value' + (hasError ? ' dim' : '');
 
         /* ---- Dataset estimates ---- */
         // Max entries the VTOC can hold (deduct overhead tracks conservatively)
@@ -1051,6 +1179,7 @@
         Object.values(msgs).forEach(m => m.classList.remove('show'));
         barVtoc.style.display  = 'none';
         barIndex.style.display = 'none';
+        barEav.style.display   = 'none';
         vpZoom.classList.remove('visible');
         zoomVtoc.style.display  = 'none';
         zoomIndex.style.display = 'none';
@@ -1059,6 +1188,9 @@
           el.textContent = '—';
           el.className = 'vp-result-item__value dim';
         });
+        resEavRow.style.display  = 'none';
+        resEavSpace.textContent  = '—';
+        resEavSpace.className    = 'vp-result-item__value dim';
         [estVtocMax, estDs1cyl, estDs50cyl].forEach(el => {
           el.textContent = '—';
           el.className = 'vp-est-item__value dim';
@@ -1071,7 +1203,7 @@
       document.getElementById('btn-calc').addEventListener('click', calculate);
       document.getElementById('btn-reset').addEventListener('click', reset);
 
-      [fVtocStart, fVtocSpan, fIdxStart, fIdxSpan].forEach(f => {
+      [fVtocStart, fVtocSpan, fIdxStart, fIdxSpan, fEavCyls].forEach(f => {
         f.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
       });
 
