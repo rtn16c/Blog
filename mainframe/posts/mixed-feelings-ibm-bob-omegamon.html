@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mixed Feelings: Using IBM Bob to Install OMEGAMON for Db2 — Return 16</title>
+  <meta name="description" content="A review of IBM Bob as a tool for installing OMEGAMON for Db2 — covering PARMGEN, skills, token consumption, and the limits of AI-assisted learning on the mainframe.">
+  <link rel="canonical" href="https://return16.blog/mainframe/posts/mixed-feelings-ibm-bob-omegamon/">
+  <link rel="icon" href="../../images/sparkle-heart.png" type="image/png">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo" aria-label="Return 16 — Home">
+        <img src="../../images/pink-bow.png" alt="" class="bow" width="40" height="40">
+        <div class="site-title">Return 16<span>a personal tech blog</span></div>
+      </a>
+      <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" onclick="toggleNav(this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav id="main-nav" class="site-nav" aria-label="Main navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html" class="active">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-wrapper page-wrapper--narrow">
+
+      <article>
+        <header class="post-header">
+          <div class="post-header__category">
+            <a href="../../mainframe/index.html">Mainframe</a> · Tools &amp; AI
+          </div>
+          <h1 class="post-header__title">Mixed Feelings: Using IBM Bob to Install OMEGAMON for Db2</h1>
+          <div class="post-header__meta">
+            <time datetime="2026-11-04">4 November 2026</time>
+            <div class="post-header__tags">
+              <span class="tag">omegamon</span>
+              <span class="tag">parmgen</span>
+              <span class="tag">ibm-bob</span>
+              <span class="tag">ai</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="post-body">
+
+          <p>As the title says, I have mixed feelings about AI.</p>
+
+          <p>It's an excellent tool for busy work, particularly for repetitive tasks you know how to do well like writing documentation or generating JCL skeletons. I even used it to redo the HTML and CSS for this blog site, plus generate some fun little web-based mainframe tools to play with.</p>
+
+          <p>But in the context of learning and doing new things, I'm still a little sceptical. Nothing can beat the learning experience of getting into software yourself and pressing buttons just to see what happens (and preferably breaking something so you have to learn how to fix it).</p>
+
+          <p>Recently, I've acquired an IBM Bob subscription, so I decided to put it to the test.</p>
+
+          <p>We will be using Bob to help install an OMEGAMON upgrade — as someone who has never touched OMEGAMON or PARMGEN before.</p>
+
+          <h2>About IBM Bob</h2>
+
+          <p>IBM Bob is IBM's AI-powered development assistant. It runs in a fork of VS Code, so you can create and give it access to projects.</p>
+
+          <p>I'm on the IBM Bob Pro Plan — the cost is $20 USD (rounds up to about $30 AUD) a month for 50 'Bobcoins'.</p>
+
+          <p>To put this into perspective, a small query usually uses about 0.2 of a Bobcoin. As the requests grow larger and more programmatically complex, they can take 1 or 2 entire Bobcoins.</p>
+
+          <p>One important distinction to note is that there is IBM Bob (for desktop) and then there is IBM Bob Premium Package for Z (for mainframes). So IBM Bob may not necessarily be as helpful when it comes to mainframe-specific questions without the Premium Package for Z. This is evident in my experiences with Bob so far.</p>
+
+          <p>IBM Bob functions similarly to LLMs and code assistants that most people will be familiar with having on their desktop, like Claude or ChatGPT.</p>
+
+          <h2>Starting the OMEGAMON Installation</h2>
+
+          <h3>Prerequisites</h3>
+
+          <ul>
+            <li>One of our other systems programmers has already installed OMEGAMON Base and OMEGAMON for CICS — I just need to slap OMEGAMON for Db2 on top of it.</li>
+            <li>I will need to rerun PARMGEN and set up the Db2 component.</li>
+            <li>I got OMEGAMON for Db2 as a CBPDO package from IBM and uploaded it to a ZFS in USS prior to starting.</li>
+          </ul>
+
+          <h3>The Installation</h3>
+
+          <p>Installation was done with SMP/E. My first mainframe internship was two years of SMP/E so that is muscle memory by now, and I got the FMID installed without much trouble.</p>
+
+          <ul>
+            <li>Receive FMID</li>
+            <li>Allocate some datasets and add them to the target zone DDDEFs so we can apply the FMID. Note: the exact specifications for what datasets to add and their allocations are always found in a product's Program Directory, along with a load of other useful install information.</li>
+            <li>Apply the FMID</li>
+            <li>Accept the FMID</li>
+          </ul>
+
+          <p>And that's pretty much it.</p>
+
+          <h2>The Deployment</h2>
+
+          <p>This is where I had no idea what was going on.</p>
+
+          <p>As mentioned briefly in the introduction, I've never used OMEGAMON or PARMGEN before. I did launch the PARMGEN menu initially, saw a bunch of acronyms and options I didn't understand, and then decided I needed some assistance.</p>
+
+          <p>PARMGEN is a set of panels used to customise OMEGAMON RTEs (Runtime Environments). It generates JCL based on parameters you enter and runs you through the basic submission flow of all of them.</p>
+
+          <p>Since this is all happening on a test system, I decided to feed Bob the relevant documentation pages from IBM's site, get it to shorten and summarise the information for me, and wing it.</p>
+
+          <p>This is the initial prompt I used — keep in mind I'm not an expert prompt engineer or anything, I just typed what I wanted:</p>
+
+          <blockquote><p>I'm installing OMEGAMON for Db2. I have completed the SMP/E installation and now I need to use PARMGEN to customise it. I have never used PARMGEN. I am happy to accept default or recommended values for most of the parameters. So far I have opened PARMGEN and looked at the options available on the main panel. Can you read through these pages and summarise the key steps I need to perform with simple explanations:
+
+[Plus a whole list of document links, most of which can be found on the OMEGAMON shared documentation pages]</p></blockquote>
+
+          <p>The reply is a little long-winded to put the full thing in a blog post. Basically, the response was a quick rundown of what PARMGEN actually is, and then a nice step-by-step list of everything I needed to do. This was by far my favourite part of the response, as often when we are learning something new the biggest obstacle is not even knowing where to start.</p>
+
+          <blockquote><p>Summary — Your Checklist
+[ ] 1.  Decide: Full RTE (recommended for you)
+[ ] 2.  Gather: HLQ, SMFID, TEMS node name, Db2 SSIDs, SDSNLOAD path, STC userids, port
+[ ] 3.  Allocate PARMGEN work datasets
+[ ] 4.  Edit WCONFIG (use guided panels first time)
+[ ] 5.  Validate (KCIJPVAL) — fix any errors
+[ ] 6.  Generate (KCIJPGEN)
+[ ] 7.  Allocate RTE datasets (KCIJPALO)
+[ ] 8.  Copy members (KCIJPCPY)
+[ ] 9.  Submit RACF/security job
+[ ] 10. Copy STCs to PROCLIB
+[ ] 11. Submit Db2 BIND jobs for each SSID
+[ ] 12. APF-authorise the runtime load library
+[ ] 13. Start Hub TEMS STC, then Db2 agent STC</p></blockquote>
+
+          <p>I was also able to ask Bob clarifying questions, like 'What is in RTE?' and 'Where do I find [this] sample job?'. Most of the time it was correct — occasionally it did send me on a wild goose chase for a dataset member that did not exist or was in a different location to where it said it was.</p>
+
+          <p>The downside of relying on Bob's assistance for this task is I didn't actually know what I was doing or why I was doing it, and I don't think I was learning or retaining all that much information. I was just relying on Bob to direct me.</p>
+
+          <p>This is fine for learning on a test system. It is less fine for working on things in production.</p>
+
+          <h2>Encountering Runtime Errors and Setting Up a Skill</h2>
+
+          <p>After the PARMGEN process was completed, I needed to run the product. Unfortunately the first time I tried to run the started tasks, they were spitting out error messages that I had no idea what to do with.</p>
+
+          <p>Usually, investigating error messages involves hours of trawling through hundred-page documents.</p>
+
+          <p>This seemed like a good opportunity to get Bob to do that for me and experiment with the 'Skills' feature.</p>
+
+          <p>Basically, a skill is a reusable set of instructions Bob can call on when you ask it to do tasks that call for certain 'skills'. Depending on what you make a skill for, it can also reduce token consumption when compared to having the AI perform tasks from first principles.</p>
+
+          <p>Since this version of Bob isn't as knowledgeable about mainframe tasks as the Bob Premium Package for Z, I decided to make it a skill called 'Look up OMEGAMON docs'. So any time I ask an OMEGAMON-related question, Bob should use this skill to consult the IBM documents rather than relying on what it's been trained on or what it can find on the web.</p>
+
+          <p>That was the idea, anyway.</p>
+
+          <p>But I ran into some more issues setting this up — I had to troubleshoot the troubleshooting!</p>
+
+          <h3>Issue One</h3>
+
+          <p>Unfortunately IBM blocks scraping of their documentation website. I sent Bob a collection of links to download and save, and it returned to inform me of this:</p>
+
+          <blockquote><p>"The PDF is reachable. The IBM Docs HTML pages are blocked (403) when accessed programmatically from this machine — they require a browser session. That means a fetch-and-cache script can only reliably download the PDF automatically; the HTML pages need to be saved manually by the user (browser → Save As)."</p></blockquote>
+
+          <p>I ended up having to save a good portion of the document web pages myself, which was a bit of a pain!</p>
+
+          <p>Nevertheless, we persist.</p>
+
+          <h3>Issue Two</h3>
+
+          <p>Bob was able to fetch the PDF downloads, and once I had manually saved the HTML pages it started to create a look-up skill. The PDFs themselves were my second issue — Bob ended up eating more of my tokens trying to read them after I asked a question and it invoked the new skill.</p>
+
+          <blockquote><p>"The PDF text isn't grep-searchable — I need to read content pages directly…" and "The kdpuge5.pdf is a binary PDF and isn't readable as text through this tool."</p></blockquote>
+
+          <p>Perhaps in hindsight it would have been better to have Bob read the PDFs once and write a summary of important points in a text file — it kept re-searching the entire 4,000-page PDF each time I asked a question.</p>
+
+          <p>At one point it even told me a variable I was looking for did not exist, only for me to Google it and find the document page pertaining to it in about 30 seconds.</p>
+
+          <p>So while the skills function was fun to play with, I'm not entirely sure it saved me much time or tokens — at least, not in the way I ended up using it. Perhaps I need to take a prompt engineering course.</p>
+
+          <h2>A Useful Find: Adding a New Db2 Subsystem Without Re-Running PARMGEN</h2>
+
+          <p>Bob <em>did</em> help me identify two jobs to run outside of PARMGEN to update an already-deployed RTE without having to go back through the entire PARMGEN process.</p>
+
+          <p>If you want to add a Db2 subsystem to your OMEGAMON for Db2 monitoring after it's already deployed:</p>
+
+          <ol>
+            <li>Add the Db2 subsystem details to your RTE Config member in the <code>*.**.WCONFIG</code> dataset.</li>
+            <li>Run <code>$PARSE</code> from the same dataset and make sure there are no errors in <code>$VALRPT</code>.</li>
+            <li>In the <code>*.**.WKANSAMU</code> dataset, run <code>KCIJPW2R</code> to rebuild the runtime datasets with the parameters parsed from <code>$PARSE</code>.</li>
+            <li>Bounce the OMEGAMON STCs.</li>
+          </ol>
+
+          <p>The new Db2 subsystem will now be accessible for monitoring.</p>
+
+          <h2>What I Got Out of It</h2>
+
+          <p>AI is here to enhance our skills and make our jobs easier — but using it to replace a knowledgeable professional is irresponsible.</p>
+
+          <p>Likewise, you should be careful when using it for learning, as it can easily hallucinate answers or put you on the wrong path.</p>
+
+          <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin:1.5rem 0;border:2px solid var(--border-strong);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);">
+            <thead>
+              <tr style="background:linear-gradient(135deg,var(--pink-pale) 0%,var(--lavender) 100%);border-bottom:2px solid var(--border-strong);">
+                <th style="text-align:left;padding:0.75rem 1rem;font-weight:600;color:var(--text-secondary);">What it's good for</th>
+                <th style="text-align:left;padding:0.75rem 1rem;font-weight:600;color:var(--text-secondary);">What it's not good for</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:var(--pink-card);border-bottom:1px solid var(--border-mid);">
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Asking 'Where do I begin?'</td>
+                <td style="padding:0.75rem 1rem;vertical-align:top;">In-depth technical questions — especially if you're asking without the knowledge to back it up. AI can often hallucinate answers that sound correct but are not.</td>
+              </tr>
+              <tr style="background:var(--pink-bg);border-bottom:1px solid var(--border-mid);">
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Finding sample job locations.</td>
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Searching thousands of pages of documentation (both in PDF form and from IBM) — this is what ended up using a lot of the coins.</td>
+              </tr>
+              <tr style="background:var(--pink-card);border-bottom:1px solid var(--border-mid);">
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Well-documented tasks with loads of training data available (for example, Bob helped revamp my blog with simple HTML, CSS, and JavaScript).</td>
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Mainframe-specific tasks.*</td>
+              </tr>
+              <tr style="background:var(--pink-bg);">
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Small tasks.</td>
+                <td style="padding:0.75rem 1rem;vertical-align:top;">Complex tasks with large context windows, like reading a 4,000-page PDF (these will eat up a lot of your coins).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p><em>*But I will give Bob the benefit of the doubt, as I was on a desktop plan and not a premium package (for mainframe).</em></p>
+
+          <h2>Transparency</h2>
+
+          <p>I also have one final gripe with the ability (or lack of ability) to see what Bob is actually doing behind the scenes.</p>
+
+          <p>In previous versions of Bob, users were able to see which models Bob was using and even direct it to only use a certain model. This is no longer possible. It seems a lot of the back-end has been hidden from the end user, which if you're anything like me, you do not appreciate.</p>
+
+          <p>This becomes particularly important when you're using AI in a work context and you need to know what model generated things — for intellectual property reasons, security and data handling, and auditability.</p>
+
+          <p><strong>Intellectual property:</strong> different models have different training data, licensing terms, and stances on code generation and copyright. If you're generating code or documentation at work and can't identify the underlying model, you can't meaningfully assess whether the output carries any IP risk.</p>
+
+          <p><strong>Security and data handling:</strong> in a work environment, prompts frequently contain sensitive context — internal system names, dataset naming conventions, security product setups. Depending on the model behind the scenes, that information may or may not be used for training, retained on external servers, or subject to different data residency requirements. Without visibility into what model is active, you can't make an informed decision about what you should and shouldn't be putting into a prompt.</p>
+
+          <p><strong>Auditability:</strong> some organisations require that AI-generated content — particularly anything that touches production configuration, security definitions, or compliance documentation — be traceable back to the tool and model that produced it. "IBM Bob generated it" is not specific enough if Bob could be routing your request through any number of different underlying models depending on the task.</p>
+
+          <p>None of this means Bob is doing anything wrong or unsafe — but transparency is a prerequisite for responsible enterprise use, and hiding that information makes it harder to trust the tool in the environments where the stakes are highest. I hope it's something IBM revisits as enterprise adoption grows.</p>
+
+          <h2>The Final Verdict</h2>
+
+          <p>I came into this journey sceptical and I'm leaving… still a little sceptical, but with a bit more nuance to my position than 'Ew, AI is stealing our jobs'. The bottom line is yes, I will continue to use AI — but selectively, and with my own knowledge to back me up rather than as a crutch.</p>
+
+        </div>
+      </article>
+
+      <div class="post-footer">
+        <a href="../../mainframe/index.html" class="back-link">← Back to Mainframe</a>
+        <a href="../../index.html" class="back-link">← All posts</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="../../images/pink-bow.png" alt="" class="footer-bow" width="36" height="36">
+      <p class="footer-text">Return 16 &mdash; a personal tech blog</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="../../index.html">Home</a>
+        <a href="../../mainframe/index.html">Mainframe</a>
+        <a href="../../computing/index.html">Computing &amp; Tech</a>
+        <a href="../../mathematics/index.html">Mathematics</a>
+        <a href="../../resources.html">Resources</a>
+        <a href="../../history.html">Post History</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav(btn) {
+      const nav = document.getElementById('main-nav');
+      const open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    }
+  </script>
+</body>
+</html>
