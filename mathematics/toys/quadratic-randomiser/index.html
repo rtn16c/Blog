@@ -228,6 +228,33 @@
       font-weight: 500;
     }
 
+    /* ── Graph panel ── */
+    .qr-graph {
+      background: var(--pink-card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem 1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .qr-graph__title {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+
+    .qr-graph svg {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+    }
+
+    .qr-graph[hidden] { display: none; }
+
     @media (max-width: 480px) {
       .qr-equation { font-size: 1.45rem; }
       .qr-card { padding: 1.75rem 1.25rem 1.5rem; }
@@ -312,6 +339,16 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy Question
           </button>
+          <button class="btn btn--secondary" id="btn-graph" onclick="graphEquation()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Graph Equation
+          </button>
+        </div>
+
+        <!-- Graph panel (hidden until button pressed) -->
+        <div class="qr-graph" id="qr-graph" hidden>
+          <div class="qr-graph__title" id="qr-graph-title"></div>
+          <svg id="qr-graph-svg" width="540" height="320" viewBox="0 0 540 320" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
 
       </div>
@@ -602,6 +639,10 @@
       diffLabel.hidden = false;
 
       document.getElementById('btn-copy').disabled = false;
+      document.getElementById('btn-graph').disabled = false;
+
+      // Hide graph panel when a new question is generated
+      document.getElementById('qr-graph').hidden = true;
 
       // Update prompt to match selected (not resolved) degree
       document.getElementById('qr-prompt').textContent = PROMPTS[diff];
@@ -645,6 +686,140 @@
 
     /* ── Coefficient toggle ── */
     document.getElementById('show-coefficients').addEventListener('change', syncCoefficients);
+
+    /* ─────────────────────────────────────────────
+       Graph Equation
+       Draws y = f(x) for the current polynomial as
+       an inline SVG. Only shown when the button is
+       pressed; hidden again on each new question.
+    ───────────────────────────────────────────── */
+    function evalPoly(coeffs, x) {
+      // coeffs in descending-power order: [a_n, ..., a_0]
+      return coeffs.reduce((acc, c) => acc * x + c, 0);
+    }
+
+    function graphEquation() {
+      if (!currentEquation) return;
+      const coeffs = currentEquation.coeffs;
+
+      const W = 540, H = 320;
+      const PAD = 40; // pixels of padding inside axes
+
+      // ── Determine x range ── pick a window that captures the roots
+      const degree = coeffs.length - 1;
+      const xHalf = degree <= 2 ? 10 : degree === 3 ? 8 : 7;
+      const xMin = -xHalf, xMax = xHalf;
+
+      // ── Sample the curve to find y range ──
+      const STEPS = 400;
+      const dx = (xMax - xMin) / STEPS;
+      const ys = [];
+      for (let i = 0; i <= STEPS; i++) {
+        const x = xMin + i * dx;
+        ys.push(evalPoly(coeffs, x));
+      }
+      let yMin = Math.min(...ys), yMax = Math.max(...ys);
+      // Guard against flat/degenerate range
+      if (yMax - yMin < 0.1) { yMin -= 5; yMax += 5; }
+      // Add 10 % padding on y
+      const yPad = (yMax - yMin) * 0.1;
+      yMin -= yPad;  yMax += yPad;
+
+      // ── Coordinate transforms ──
+      const plotW = W - 2 * PAD, plotH = H - 2 * PAD;
+      function toSvgX(x) { return PAD + (x - xMin) / (xMax - xMin) * plotW; }
+      function toSvgY(y) { return PAD + (1 - (y - yMin) / (yMax - yMin)) * plotH; }
+
+      // ── Axis positions ──
+      const axisX = toSvgX(0);  // x=0 in SVG coords
+      const axisY = toSvgY(0);  // y=0 in SVG coords
+      const clampedAxisX = Math.max(PAD, Math.min(W - PAD, axisX));
+      const clampedAxisY = Math.max(PAD, Math.min(H - PAD, axisY));
+
+      // ── Build SVG ──
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = document.getElementById('qr-graph-svg');
+      // Clear previous drawing
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+      function el(tag, attrs) {
+        const e = document.createElementNS(NS, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      }
+
+      // Grid lines (light)
+      const gridColour = '#e9d5e9';
+      // Vertical grid every 2 units
+      for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+        if (x % 2 !== 0) continue;
+        svg.appendChild(el('line', { x1: toSvgX(x), y1: PAD, x2: toSvgX(x), y2: H - PAD, stroke: gridColour, 'stroke-width': '1' }));
+      }
+      // Horizontal grid — pick a sensible y step
+      const yRange = yMax - yMin;
+      const rawStep = yRange / 6;
+      const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const niceSteps = [1, 2, 5, 10].map(s => s * mag);
+      const yStep = niceSteps.find(s => yRange / s <= 8) || niceSteps[niceSteps.length - 1];
+      for (let y = Math.ceil(yMin / yStep) * yStep; y <= yMax; y += yStep) {
+        const sy = toSvgY(y);
+        svg.appendChild(el('line', { x1: PAD, y1: sy, x2: W - PAD, y2: sy, stroke: gridColour, 'stroke-width': '1' }));
+      }
+
+      // Axes
+      const axisColour = '#c084c0';
+      svg.appendChild(el('line', { x1: PAD, y1: clampedAxisY, x2: W - PAD, y2: clampedAxisY, stroke: axisColour, 'stroke-width': '1.5' }));
+      svg.appendChild(el('line', { x1: clampedAxisX, y1: PAD, x2: clampedAxisX, y2: H - PAD, stroke: axisColour, 'stroke-width': '1.5' }));
+
+      // Axis labels
+      const labelStyle = 'font-size:10px;font-family:monospace;fill:#9f6b9f;';
+      // x-axis tick labels
+      for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+        if (x % 2 !== 0 || x === 0) continue;
+        const lx = toSvgX(x);
+        svg.appendChild(el('text', { x: lx, y: clampedAxisY + 14, 'text-anchor': 'middle', style: labelStyle })).textContent = x;
+      }
+      // y-axis tick labels
+      for (let y = Math.ceil(yMin / yStep) * yStep; y <= yMax; y += yStep) {
+        if (Math.abs(y) < yStep * 0.01) continue; // skip near-zero
+        const sy = toSvgY(y);
+        const label = Number.isInteger(y) ? String(y) : y.toFixed(1);
+        svg.appendChild(el('text', { x: clampedAxisX - 4, y: sy + 3.5, 'text-anchor': 'end', style: labelStyle })).textContent = label;
+      }
+      // Origin label
+      svg.appendChild(el('text', { x: clampedAxisX - 4, y: clampedAxisY + 14, 'text-anchor': 'end', style: labelStyle })).textContent = '0';
+
+      // Axis arrows
+      const arrowColour = axisColour;
+      svg.appendChild(el('polygon', { points: `${W-PAD},${clampedAxisY} ${W-PAD-7},${clampedAxisY-4} ${W-PAD-7},${clampedAxisY+4}`, fill: arrowColour }));
+      svg.appendChild(el('polygon', { points: `${clampedAxisX},${PAD} ${clampedAxisX-4},${PAD+7} ${clampedAxisX+4},${PAD+7}`, fill: arrowColour }));
+
+      // Curve — build SVG path, breaking at vertical asymptotes / large jumps
+      const curveColour = '#be185d';
+      let pathData = '';
+      let prevSy = null;
+      for (let i = 0; i <= STEPS; i++) {
+        const x = xMin + i * dx;
+        const y = ys[i];
+        const sx = toSvgX(x);
+        const sy = toSvgY(y);
+        // Break path if jump is huge (discontinuity guard)
+        if (prevSy !== null && Math.abs(sy - prevSy) > plotH * 1.5) {
+          pathData += ` M ${sx.toFixed(1)} ${sy.toFixed(1)}`;
+        } else if (pathData === '') {
+          pathData = `M ${sx.toFixed(1)} ${sy.toFixed(1)}`;
+        } else {
+          pathData += ` L ${sx.toFixed(1)} ${sy.toFixed(1)}`;
+        }
+        prevSy = sy;
+      }
+      svg.appendChild(el('path', { d: pathData, fill: 'none', stroke: curveColour, 'stroke-width': '2.2', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+
+      // Show the panel and update its title
+      const panel = document.getElementById('qr-graph');
+      document.getElementById('qr-graph-title').textContent = 'y = f(x)  —  ' + currentEquation.plainText.replace(' = 0', '');
+      panel.hidden = false;
+    }
   </script>
 </body>
 </html>
